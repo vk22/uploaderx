@@ -361,7 +361,7 @@ class UploadService {
         thumbnails: data.snippet.thumbnails ? data.snippet.thumbnails : null,
         releaseID: releaseID ? releaseID : null
       }
-      axios.post('http://labels.kx-streams.com/api/add-youtube', newYoutubeItem, {
+      axios.post('https://tools.revibed.com/api/add-youtube', newYoutubeItem, {
         headers: {
           'content-type': 'application/json',
           'accept': 'application/json',
