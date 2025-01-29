@@ -234,7 +234,7 @@ class UploadService {
                         ////
                         this.sendUplodedItemToRevibed(data.data, releaseID)
                     }
-                    if (this.userID === '109411733370124122052') {
+                    if (this.userID === '102814452894667054158') {
                       console.log("sendUplodedItemToRevibed...");
                       this.sendUplodedItemToRevibed(data.data, releaseID)
                     }
