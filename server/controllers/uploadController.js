@@ -30,7 +30,7 @@ const startAutoUpload = async (req, res) => {
   await uploadService.setUploadData(uploadData, uploadUserDir)
 
 
-  for (file of files) {
+  for (const file of files) {
     if (file !== '.DS_Store') {
       let filePath = `${autoUploadDir}/audio/${file}`
       const metadata = await metadataService.readID3Tags(filePath)

@@ -368,7 +368,7 @@ const formDataAll = new FormData();
 const fieldsFromDiscogs = ref([]);
 const discogsLinkTemp = ref(undefined);
 
-const autoUploadUser = ref("109411733370124122052");
+const autoUploadUser = ref("102814452894667054158");
 // const uploadTemplatesOptions = computed(() => {
 //   let data;
 //   if (user) {
