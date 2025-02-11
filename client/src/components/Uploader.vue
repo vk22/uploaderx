@@ -124,8 +124,8 @@
       <div class="block-title">
         <h3>Upload your audio file</h3>
       </div>
-      <div v-if="user.id === autoUploadUser">
-        <div class="btn mb-3" @click="startAutoUpload()">Start AutoUpload</div>
+      <div v-if="user">
+        <div v-if="user.id === autoUploadUser" class="btn mb-3" @click="startAutoUpload()">Start AutoUpload</div>
       </div> 
       
       <div class="audio-dropzone">
@@ -560,7 +560,7 @@ function generateFileFromURL(url, filename, mimeType) {
     });
 }
 async function getDiscogs(data, сoverNeed) {
-  const userID = user ? user.value.id : "test";
+  const userID = user.value ? user.value.id : "test";
   return await axios.post("/api/getdiscogs", {
     data: data,
     user: userID,
@@ -570,7 +570,7 @@ async function getDiscogs(data, сoverNeed) {
 async function getDiscogsByReleaseID() {
     inputErrors.value = [];
     mainStore.setFileLoading(true);
-    const userID = user ? user.value.id : "test";
+    const userID = user.value ? user.value.id : "test";
 
     if (discogsLinkTemp.value) {
       const arr = discogsLinkTemp.value.split("/");
@@ -812,12 +812,14 @@ async function uploadeFiles() {
   const tags = videoData.value.tags;
   const cover = videoData.value.pictureURL;
   const privacyStatus = videoData.value.privacyStatus;
+  const releaseID = audioData.value ? audioData.value.discogsRelease.id : null
 
   if (!inputErrors.value.length) {
     scrollToTop(500);
     //this.audioFileIsAdded = false;
-    const userID = user ? user.value.id : "test";
+    const userID = user.value ? user.value.id : "test";
     formDataAll.append("userID", userID);
+    formDataAll.append("releaseID", releaseID);
     formDataAll.append("title", title);
     formDataAll.append("description", description);
     formDataAll.append("tags", tags);

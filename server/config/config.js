@@ -2,9 +2,9 @@ module.exports = {
   port: 5000,
   dbURL: 'mongodb://127.0.0.1:27017/ytbuploader',
   dbOptions: { useUnifiedTopology: true, useNewUrlParser: true },
-  // rootDir: '/Users/viktorkusnir/apps/uploaderV3/client/public',
+  rootDir: '/Users/user/Works_SSD/uploaderx/client/public',
   // autoUploadDir: '/Users/viktorkusnir/apps/uploaderV3/client/public/uploads/auto',
-  rootDir: '/var/www/uploader/www/client/public',
+  //rootDir: '/var/www/uploader/www/client/public',
   autoUploadDir: '/var/www/uploader/www/client/public/uploads/auto',
   secret: 'zzz',
   credentials: {

@@ -17,7 +17,7 @@
     "multer": "^1.4.5-lts.1",
     "music-metadata": "7.13.0",
     "nodemon": "^3.1.4",
-    "sharp": "^0.33.4",
+    "sharp": "^0.33.5",
     "socket.io": "^4.7.5"
   },
   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"

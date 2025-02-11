@@ -86,6 +86,7 @@ const uploadFiles = async (req, res) => {
   console.log('uploadFiles ', req.body)
   const uploadData = req.body;
   const userID = req.body.userID;
+  const releaseID = req.body.releaseID;
   const uploadUserDir = `${uploadDir}/${userID}`;
   const uploadedFiles = req.files
 
@@ -105,7 +106,7 @@ const uploadFiles = async (req, res) => {
     userId: userID
   });
 
-  await uploadService.pushToYoutube()
+  await uploadService.pushToYoutube(releaseID)
   // console.log('newUpload ', newUpload)
 
   console.log('uploadService.pushVideo ', uploadService.pushVideo)

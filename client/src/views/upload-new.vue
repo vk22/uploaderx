@@ -1,46 +1,16 @@
 <template>
-  <UploadNew2></UploadNew2>
+  <main>
+    <Uploader></Uploader>
+  </main>
 </template>
 
-<script>
+<script setup>
+  import { computed } from "vue";
+  import { useAuthStore } from "@/stores/auth";
+  const authStore = useAuthStore();
+  const authenticated = computed(() => authStore.authenticated);
 
-export default {
-    components: {
+  import Uploader from '../components/Uploader.vue'
+  import Login from '../components/Login.vue'
 
-    },
-    data () {
-      return {
-        message: undefined
-      }
-    },
-    sockets: {
-        connect: function () {
-            console.log('socket connected')
-        },
-        customEmit: function (data) {
-            console.log('this method was fired by the socket server. eg: io.emit("customEmit", data)')
-        }
-    },
-    methods: {
-        clickButton: function (data) {
-            // $socket is socket.io-client instance
-            this.$socket.emit('createMessage', {id: 10, msg: 'hi!'})
-            
-            // this.sockets.subscribe('SOCKET_newMessage', (data) => {
-            //     this.message = data.message;
-            // });
-        }
-    },
-    mounted() {
-      this.$socket.on('newMessage', data => {
-                console.log('listen fired')
-                console.log(data);
-
-            });
-    }
-}
 </script>
-
-<style>
-
-</style>
