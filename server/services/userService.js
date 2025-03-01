@@ -188,6 +188,7 @@ class UserService {
             }
             return true;
         } catch (error) {
+            console.log('createUserFolder error ', error.message)
             return error.message;
         }
     }
