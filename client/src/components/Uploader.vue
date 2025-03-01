@@ -162,9 +162,6 @@
               >
                 <div class="cover-preview">
                   <img :src="videoData.pictureURL" class="cover" />
-                  <img :src="videoData.imgUrl" class="cover" />
-
-                  
                 </div>
               </div>
               <div
