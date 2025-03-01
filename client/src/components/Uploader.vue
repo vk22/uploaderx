@@ -358,7 +358,6 @@ const inputHasError = (field) => {
 };
 
 const uploadDisabled = ref(1);
-const cover_version = ref(1);
 const releaseCoverExist = ref(false);
 const audioFileIsAdded = ref(false);
 const releaseCoverNeed = ref(false);
@@ -746,6 +745,9 @@ function uploaderHelper(data) {
     }, data.message.length * 85);
   }
 }
+function generateRandomNum() {
+  return Math.floor(Math.random() * 1000000000);
+}
 function setEmptyField(data, cover) {
   console.log("setEmptyField ", data);
   fieldsFromDiscogs.value = [];
@@ -757,9 +759,7 @@ function setEmptyField(data, cover) {
     }
   }
   if (cover) {
-    cover_version.value = cover_version.value + 1;
-    videoData.value.pictureURL = cover + "?version=" + cover_version.value;
-    videoData.value.imgUrl = new URL(cover + "?version=" + cover_version.value, import.meta.url).href
+    videoData.value.pictureURL = cover + "?version=" + generateRandomNum();
     if (videoData.value.pictureURL) {
       releaseCoverNeed.value = false;
       releaseCoverExist.value = true;
@@ -778,9 +778,7 @@ function setAllField(release, cover) {
     }
   }
   if (cover) {
-    cover_version.value = cover_version.value + 1;
-    videoData.value.pictureURL = cover + "?version=" + cover_version.value;
-    videoData.value.imgUrl = new URL(cover + "?version=" + cover_version.value, import.meta.url).href
+    videoData.value.pictureURL = cover + "?version=" + generateRandomNum();
     if (videoData.value.pictureURL) {
       releaseCoverNeed.value = false;
       releaseCoverExist.value = true;
