@@ -11,6 +11,7 @@ dump/
 
 # dotenv environment variable files
 **/.env
+**/.env.development
 
 # Large media files
 *.mp4
@@ -27,3 +28,6 @@ dump/
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+
+# uploads
+client/public/uploads
