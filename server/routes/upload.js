@@ -3,9 +3,9 @@ const router = express.Router()
 const multer = require('multer')
 const uploadController = require('../controllers/uploadController')
 const metadataController = require("../controllers/metadataController");
-const config = require("../config/config");
-const uploadDir =  config.rootDir + "/uploads";
-const uploadDirRVBD =  config.autoUploadDir + "/audio";
+const rootDir = process.env.ROOT_DIR;
+const uploadDir =  rootDir + "/uploads";
+const uploadDirRVBD =  rootDir + "uploads/auto/audio";
 const storageFiles = multer.diskStorage({
   destination: function (req, file, cb) {
     const userID = req.query.user
