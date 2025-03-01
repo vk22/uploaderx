@@ -3,7 +3,7 @@ const dotenv = require("dotenv")
 // console.log('process.env.NODE_ENV ', process.env.NODE_ENV)
 const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env'
 dotenv.config({ path: envFile })
-// console.log('envFile ', envFile);
+console.log('envFile ', envFile);
 // console.log(process.env);
 
 const express = require('express');
