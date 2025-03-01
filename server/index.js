@@ -1,3 +1,11 @@
+
+const dotenv = require("dotenv")
+// console.log('process.env.NODE_ENV ', process.env.NODE_ENV)
+const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env'
+dotenv.config({ path: envFile })
+// console.log('envFile ', envFile);
+// console.log(process.env);
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -33,7 +41,7 @@ app.use(function(req,res,next){
 });
 
 
-
+app.use('/api', require('./routes/admin'))
 app.use('/api', require('./routes/user'))
 app.use('/api', require('./routes/upload'))
 
@@ -115,7 +123,7 @@ io.on("connection", async (socket) => {
 
 });
 
-mongoose.connect(config.dbURL, config.dbOptions)
+mongoose.connect(process.env.DATABASE)
 
 mongoose.connection
   .once('open', () => {
@@ -128,9 +136,8 @@ module.exports = {
   server,
 };
 
-const port = 8000
 
-server.listen(port, () => {
-  console.log(`API listening at http://localhost:${port}`)
+server.listen(process.env.PORT, () => {
+  console.log(`API listening at http://localhost:${process.env.PORT}`)
 })
 

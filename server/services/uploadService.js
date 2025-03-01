@@ -5,17 +5,17 @@ const exec = util.promisify(require("child_process").exec);
 const { google } = require("googleapis");
 const service = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
-const config = require("../config/config");
-const kxTitle = config.rootDir + "/uploads/kx-title.png";
-const uploaderLogo = config.rootDir + "/uploads/uploader-logo.png";
-const backgroundBlack = config.rootDir + "/uploads/background.jpg";
-const fontBold = config.rootDir + "/fonts/Montserrat-SemiBold.ttf";
-const fontLight = config.rootDir + "/fonts/Montserrat-Light.ttf";
+const rootDir = process.env.ROOT_DIR;
+const kxTitle = rootDir + "/uploads/kx-title.png";
+const uploaderLogo = rootDir + "/uploads/uploader-logo.png";
+const backgroundBlack = rootDir + "/uploads/background.jpg";
+const fontBold = rootDir + "/fonts/Montserrat-SemiBold.ttf";
+const fontLight = rootDir + "/fonts/Montserrat-Light.ttf";
 const Video = require("../models/video-model");
 const User = require("../models/user-model");
-const axios = require("axios")
-const userService = require('../services/userService')
-
+const axios = require("axios");
+const userService = require('../services/userService');
+const config = require("../config/config");
 
 const sharp = require('sharp');
 
@@ -169,8 +169,8 @@ class UploadService {
         const tags = this.tags;
         const privacyStatus = this.privacyStatus
         // //// credentials
-        const clientSecret = config.credentials.client_secret;
-        const clientId = config.credentials.client_id;
+        const clientSecret = process.env.CLIENT_SECRET;
+        const clientId = process.env.CLIENT_ID;
         const redirectUrl = '';
         const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
         oauth2Client.credentials = tokens;
@@ -234,7 +234,7 @@ class UploadService {
                         ////
                         this.sendUplodedItemToRevibed(data.data, releaseID)
                     }
-                    if (this.userID === '102814452894667054158') {
+                    if (this.userID === '102814452894667054158' || this.userID === '104745960371715319263') {
                       console.log("sendUplodedItemToRevibed...");
                       this.sendUplodedItemToRevibed(data.data, releaseID)
                     }
@@ -244,6 +244,7 @@ class UploadService {
                         message: "File uploaded",
                         url: data.data.id
                     }
+                    
                     resolve(true);
                 }
       
@@ -266,9 +267,9 @@ class UploadService {
     async getMyVideos() {
       const token = this.token;
       //// credentials
-      const clientSecret = config.credentials.client_secret;
-      const clientId = config.credentials.client_id;
-      const redirectUrl = config.credentials.redirect_uris[0];
+      const clientSecret = process.env.CLIENT_SECRET;
+      const clientId = process.env.CLIENT_ID;
+      const redirectUrl = process.env.REDIRECT_URIS;
       const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
       oauth2Client.credentials = token;
       oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
@@ -288,7 +289,7 @@ class UploadService {
         nextPageToken = res.data.nextPageToken
         items = res.data.items
         if (items) {
-          fs.writeFileSync(`${config.rootDir}/list-${page}.json`, JSON.stringify(items) , 'utf-8');
+          fs.writeFileSync(`${rootDir}/list-${page}.json`, JSON.stringify(items) , 'utf-8');
         }
         page += 1
       }
@@ -296,9 +297,9 @@ class UploadService {
     async getMyLastVideos() {
       const token = this.token;
       //// credentials
-      const clientSecret = config.credentials.client_secret;
-      const clientId = config.credentials.client_id;
-      const redirectUrl = config.credentials.redirect_uris[0];
+      const clientSecret = process.env.CLIENT_SECRET;
+      const clientId = process.env.CLIENT_ID;
+      const redirectUrl = process.env.REDIRECT_URIS;
       const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
       oauth2Client.credentials = token;
       oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];

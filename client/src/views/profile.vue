@@ -1,14 +1,16 @@
 <template>
   <div class="user-page" v-if="user">
     <v-row>
-      <v-col>
+      <v-col class="center">
         <div>
-          <b>Username:</b> {{ user.username }}
+          <img :src="user.picture" alt="" class="avatar">
         </div>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
+        <div>
+          <h3>{{ user.name }}</h3> 
+        </div>
+        <div>
+            {{ user.id }}
+        </div>
         <div>
         <b>Plan:</b> {{ user.plan }}
         </div>
@@ -21,7 +23,7 @@
         </div>
       </v-col>
     </v-row>
-    <div class="table-container" role="table" aria-label="Destinations">
+    <div v-if="user.uploads" class="table-container" role="table" aria-label="Destinations">
         <v-simple-table>
           <template v-slot:default>
             <thead>
@@ -53,20 +55,13 @@
   </div>
 </template>    
 
-<script>
-export default {
-    methods: {
-
-    },
-    computed: {
-      loggedIn() {
-        return this.$auth.loggedIn
-      },
-      user() {
-        return this.$store.getters.getUser;
-      }
-    },
-};
+<script setup>
+import { computed, ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
+const authStore = useAuthStore();
+const authenticated = computed(() => authStore.authenticated);
+const user = computed(() => authStore.user);
+const token = computed(() => authStore.token);
 </script>
 
 <style lang="scss">
@@ -79,6 +74,24 @@ export default {
   margin: 0 auto;
   color: #111;
   padding-top: 10rem;
+  height: 80vh;
+
+  .center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    & > div {
+      margin-bottom: .5rem;
+    }
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 100px;
+  }
 
   .table-container {
     background: #fff;

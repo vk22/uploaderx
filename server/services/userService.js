@@ -1,6 +1,7 @@
 const fs = require("fs");
 const config = require("../config/config");
-const uploadDir =  config.rootDir + "/uploads";
+const rootDir = process.env.ROOT_DIR;
+const uploadDir =  rootDir + "/uploads";
 const User = require("../models/user-model");
 var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
@@ -74,8 +75,8 @@ class UserService {
         try {
             console.log("code ", code);
             if (code) {
-                const clientSecret = config.credentials.client_secret;
-                const clientId = config.credentials.client_id;
+                const clientSecret = process.env.CLIENT_SECRET;
+                const clientId = process.env.CLIENT_ID;
                 const redirectUrl = 'postmessage';
                 const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
                 
@@ -149,9 +150,9 @@ class UserService {
         try {
             console.log("refreshtoken: " + tokens.refresh_token);
             if (tokens) {
-                var clientSecret = config.credentials.client_secret;
-                var clientId = config.credentials.client_id;
-                var redirectUrl = config.credentials.redirect_uris[0];
+                const clientSecret = process.env.CLIENT_SECRET;
+                const clientId = process.env.CLIENT_ID;
+                const redirectUrl = process.env.REDIRECT_URIS;
                 var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
                 oauth2Client.credentials = tokens;
                 const data = await oauth2Client.refreshAccessToken()

@@ -4,6 +4,8 @@ import About from '../views/about.vue'
 import Privacy from '../views/privacy.vue'
 import Terms from '../views/terms.vue'
 import UploadNew from '@/views/upload-new.vue'
+import Profile from '../views/profile.vue'
+import Admin from '../views/admin.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +34,16 @@ const router = createRouter({
       path: '/upload',
       name: 'upload',
       component: UploadNew
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: Profile
+    },
+    {
+      path: '/admin',
+      name: 'profile',
+      component: Admin
     }
   ]
 })

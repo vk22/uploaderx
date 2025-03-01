@@ -12,7 +12,7 @@
             </div>
           </template>
           <v-list>
-            <!-- <v-list-item to="/profile">Profile</v-list-item> -->
+            <v-list-item to="/profile">Profile</v-list-item>
             <v-list-item @click="userLogout">Logout</v-list-item>
           </v-list>
         </v-menu>
@@ -27,6 +27,7 @@
   const authStore = useAuthStore();
   const loggedIn = computed(() => authStore.authenticated);
   const user = computed(() => authStore.user);
+  console.log('user ', user)
 
   const userLogout = (event) => {
     event.preventDefault()

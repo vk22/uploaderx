@@ -121,9 +121,9 @@
 
     <!-- Dropzone -->
     <div class="drop-zone-container" v-show="!audioFileIsAdded">
-      <div class="block-title">
+      <!-- <div class="block-title">
         <h3>Upload your audio file</h3>
-      </div>
+      </div> -->
       <div v-if="user">
         <div v-if="user.id === autoUploadUser" class="btn mb-3" @click="startAutoUpload()">Start AutoUpload</div>
       </div> 
@@ -161,7 +161,10 @@
                 v-if="!releaseCoverNeed && !coverLoading"
               >
                 <div class="cover-preview">
-                  <img v-bind:src="videoData.pictureURL" class="cover" />
+                  <img :src="videoData.pictureURL" class="cover" />
+                  <img :src="videoData.imgUrl" class="cover" />
+
+                  
                 </div>
               </div>
               <div
@@ -462,7 +465,7 @@ async function fileAdded(file) {
 
     //// Get Cover From File
     releaseCoverExist.value = await getCoverFromFile(metadata);
-    console.log("releaseCoverExist ", releaseCoverExist);
+    console.log("audioData ", audioData.value);
 
     const title = audioData.value.title
       ? audioData.value.title.split(" ")
@@ -478,6 +481,7 @@ async function fileAdded(file) {
     const firstResponseToDiscogs = query
       ? await getDiscogs({ album, artist, title }, coverNeed)
       : undefined;
+      console.log('firstResponseToDiscogs ', firstResponseToDiscogs)
     afterDiscogsRequest(firstResponseToDiscogs);
 
     uploadDisabled.value = 0;
@@ -561,8 +565,9 @@ function generateFileFromURL(url, filename, mimeType) {
 }
 async function getDiscogs(data, сoverNeed) {
   const userID = user.value ? user.value.id : "test";
+  console.log('data ', data)
   return await axios.post("/api/getdiscogs", {
-    data: data,
+    trackData: data,
     user: userID,
     сoverNeed: сoverNeed,
   });
@@ -757,6 +762,7 @@ function setEmptyField(data, cover) {
   if (cover) {
     cover_version.value = cover_version.value + 1;
     videoData.value.pictureURL = cover + "?version=" + cover_version.value;
+    videoData.value.imgUrl = new URL(cover + "?version=" + cover_version.value, import.meta.url).href
     if (videoData.value.pictureURL) {
       releaseCoverNeed.value = false;
       releaseCoverExist.value = true;
@@ -777,6 +783,7 @@ function setAllField(release, cover) {
   if (cover) {
     cover_version.value = cover_version.value + 1;
     videoData.value.pictureURL = cover + "?version=" + cover_version.value;
+    videoData.value.imgUrl = new URL(cover + "?version=" + cover_version.value, import.meta.url).href
     if (videoData.value.pictureURL) {
       releaseCoverNeed.value = false;
       releaseCoverExist.value = true;
@@ -1161,6 +1168,8 @@ async function getFileMetadata(filePath) {
   display: flex;
   justify-content: center;
   width: 100%;
+  align-items: center;
+  height: 100%;
 }
 
 .cover-preview {
@@ -1171,8 +1180,8 @@ async function getFileMetadata(filePath) {
   justify-content: center;
   padding: 0rem;
   border-radius: 6px;
-  border: 1px solid #a1a1a1;
-  padding: 10px;
+  border: 2px solid #ffffff;
+  // padding: 10px;
 
   .cover {
     display: block;
