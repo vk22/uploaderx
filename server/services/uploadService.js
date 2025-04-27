@@ -135,21 +135,21 @@ class UploadService {
         try {
           if (coverType === "KX") {
             // console.log('kxTitle ', kxTitle)
-            const im1 = `convert ${file} -resize 1920x1080 -gravity East -background '#1a1a1a' -extent 1920x1080 ${file}`;
+            const im1 = `magick ${file} -resize 1920x1080 -gravity East -background '#1a1a1a' -extent 1920x1080 ${file}`;
             const im2 = `magick composite -gravity West -geometry +50+150 ${kxTitle} ${file} -colorspace rgb -type truecolor ${file}`;
             await exec(im1);
             await exec(im2);
           } else if (coverType === "1") {
             // const im1 = `magick -size 1920x1080 xc:none -colorspace rgb -type truecolor ${backgroundBlack}`;
-            const im1 = `convert ${file} -resize 920x920 ${backgroundBlack} +swap -gravity West -geometry +100+0 -compose over -composite ${file}`;
+            const im1 = `magick ${file} -resize 920x920 ${backgroundBlack} +swap -gravity West -geometry +100+0 -compose over -composite ${file}`;
             const im2 = `magick composite -gravity SouthEast -geometry +80+80 ${uploaderLogo} ${file} ${file}`;
-            const im3 = `convert ${file} -font ${fontBold} -pointsize 32 -fill white -gravity NorthEast -draw "text 80,80 '${this.audioArtist}'" -font ${fontLight} -draw "text 80,130 '${this.audioTitle}'" -draw "text 80,180 '${this.audioCountryYear}'" ${file}`
+            const im3 = `magick ${file} -font ${fontBold} -pointsize 32 -fill white -gravity NorthEast -draw "text 80,80 '${this.audioArtist}'" -font ${fontLight} -draw "text 80,130 '${this.audioTitle}'" -draw "text 80,180 '${this.audioCountryYear}'" ${file}`
             // await exec(im1);
             await exec(im1);
             await exec(im2);
             await exec(im3);
           } else if (coverType === "2") {
-            const im1 = `convert ${file} -resize 1920x1080 -gravity center -background '#000000' -extent 1920x1080 ${file}`;
+            const im1 = `magick ${file} -resize 1920x1080 -gravity center -background '#000000' -extent 1920x1080 ${file}`;
             await exec(im1);
           }
         } catch (err) {
