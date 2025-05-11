@@ -33,15 +33,13 @@ class UserService {
             console.log(error.message)
         }
     }
-
     async login(userData, refreshToken, tokens) {
-        console.log('userData ', tokens)
-        try {
-            const { id } = userData
-
+        const { id } = userData;
+        
+        console.log('login login ', this)
+        try {  
             /// check user
-            const candidate = await User.findOne({ id: id })
-            console.log('candidate ', candidate)
+            const candidate = await User.findOne({ id: id });
             if (candidate) {
                 candidate.refreshToken = refreshToken;
                 candidate.tokens = tokens
@@ -53,9 +51,11 @@ class UserService {
                 return { success: true, user: user };
             }
 
+
         } catch (error) {
             console.log(error.message)
         }
+
     }
 
     async logout(id) {
@@ -123,14 +123,25 @@ class UserService {
     async getUserTokens(userID) {
         console.log('getUserTokens ', userID)
         const user = await User.findOne({id: userID})
+        console.log('getUserTokens user', user)
         if (user) {
             const tokens = user.tokens
-            /// check expire
-            const now = Date.now()
-            const diff = tokens.expiry_date - now
-            console.log('diff ', diff)
-            if (diff > 60000) {
-                return tokens
+            if (tokens) {
+                /// check expire
+                const now = Date.now()
+                const diff = tokens.expiry_date - now
+                console.log('diff ', diff)
+                if (diff > 60000) {
+                    return tokens
+                } else {
+                    const newTokens = await this.refreshToken(tokens)
+                    console.log('newTokens ', newTokens)
+                    if (newTokens.success) {
+                        /// user save new tokens
+                        await this.saveToken(userID, newTokens.tokens.refresh_token, newTokens.tokens)
+                        return newTokens.tokens
+                    }
+                }
             } else {
                 const newTokens = await this.refreshToken(tokens)
                 console.log('newTokens ', newTokens)
@@ -140,6 +151,7 @@ class UserService {
                     return newTokens.tokens
                 }
             }
+
             
         } else {
             return false;

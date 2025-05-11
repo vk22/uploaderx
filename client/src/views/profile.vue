@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="user-page" v-if="user">
     <v-row>
       <v-col class="center">
@@ -13,6 +14,19 @@
         </div>
         <div>
         <b>Plan:</b> {{ user.plan }}
+        </div>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col>
+        <v-text-field v-model="playlistID" label="Label" variant="outlined"></v-text-field>
+        <v-btn variant="outlined" @click="searchYtb">
+          Start
+        </v-btn>
+        <div v-for="(item, index) in searchYtbResult" :key="index" class="mt-4">
+          <div>{{ item.snippet.title }}</div>
+          <div>{{ item.snippet.description }}</div>
         </div>
       </v-col>
     </v-row>
@@ -53,15 +67,36 @@
         </v-simple-table>
       </div>
   </div>
+  </div>
+
 </template>    
 
 <script setup>
-import { computed, ref } from "vue";
-import { useAuthStore } from "@/stores/auth";
-const authStore = useAuthStore();
-const authenticated = computed(() => authStore.authenticated);
-const user = computed(() => authStore.user);
-const token = computed(() => authStore.token);
+// import { computed, ref } from "vue";
+// import { useAuthStore } from "@/stores/auth";
+// const authStore = useAuthStore();
+// const authenticated = computed(() => authStore.authenticated);
+// const user = computed(() => authStore.user);
+// const token = computed(() => authStore.token);
+  import axios from "axios";
+  import { computed, ref } from "vue";
+  import { useAuthStore } from "@/stores/auth";
+  const authStore = useAuthStore();
+  const loggedIn = computed(() => authStore.authenticated);
+  const user = computed(() => authStore.user);
+  console.log('user profile ', user.value.id)
+
+  const playlistID = ref('');
+  const searchYtbResult = ref('');
+
+  const searchYtb = async () => {
+    const { data } = await axios.get('/api/get-my-videos', { params: { userID: user.value.id, playlistID: playlistID.value } });
+    console.log('data ', data);
+    searchYtbResult.value = data.allItems
+  }
+
+
+
 </script>
 
 <style lang="scss">

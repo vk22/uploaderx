@@ -44,19 +44,23 @@ async function sendCodeToBackend(code) {
 
 .login-button {
   align-items: center;
-  background-color: #fff;
-  border: 2px solid #e5e5e5;
+  background-color: #1a1919;
+  border: 2px solid #1a1919;
   display: flex;
-  height: 54px;
+  height: 62px;
   justify-content: center;
   width: 210px;
   padding-right: 10px;
   cursor: pointer;
   box-shadow: 0px 1px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: all .25s ease-in-out;
   // animation: fadeDown 2s cubic-bezier(0,4,1,4);
 
   &:hover {
-    border: 2px solid #ccc;
+    // border: 2px solid #fff;
+    transform: translateY(-2px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.25);
   }
 
   .login-ic {
@@ -69,7 +73,7 @@ async function sendCodeToBackend(code) {
     background-position: center center;
   }
   .login-text {
-    color: #757575;
+    color: #fff;
     font-weight: 500;
   }
 }

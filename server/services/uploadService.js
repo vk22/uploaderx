@@ -77,10 +77,12 @@ class UploadService {
         this.audioArtist = null
         this.audioCountryYear = null
     }
+    async setUserID(data) {
+        this.userID = data.userID;
+    }
     async setUploadData(uploadData, uploadDir) {
       console.log('setUploadData ', uploadData)
         this.uploadDir = uploadDir;
-        this.userID = uploadData.userID;
         this.title = uploadData.title
         this.description = (uploadData.uploadTemplate === 'KX') ? config.kxDescription : uploadData.description
         this.tags = (uploadData.uploadTemplate === 'KX') ? config.tags : uploadData.tags
@@ -264,55 +266,65 @@ class UploadService {
           }
         });
     }
-    async getMyVideos() {
-      const token = this.token;
+    async getMyVideos(userID, playlistID) {
+      console.log('getMyVideos playlistID ', playlistID)
+      const tokens = await userService.getUserTokens(userID)
       //// credentials
       const clientSecret = process.env.CLIENT_SECRET;
       const clientId = process.env.CLIENT_ID;
       const redirectUrl = process.env.REDIRECT_URIS;
       const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-      oauth2Client.credentials = token;
+      oauth2Client.credentials = tokens;
       oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
 
 
       let nextPageToken = null
       let items = undefined
+      let allItems = []
       let page = 1
       while (page == 1 || nextPageToken) {
         let res = await service.playlistItems.list({
             part: "id,snippet,contentDetails",
-            playlistId: "PLfw2qURVvqds10Nt2t2MrBSGLN1evMCU5",
+            playlistId: playlistID,
             pageToken: nextPageToken,
             maxResults: 50,
             auth: oauth2Client
         });
+        
         nextPageToken = res.data.nextPageToken
-        items = res.data.items
+        items = res.data.items;
+        console.log('items ', items)
         if (items) {
-          fs.writeFileSync(`${rootDir}/list-${page}.json`, JSON.stringify(items) , 'utf-8');
+          // fs.writeFileSync(`${rootDir}/list-${page}.json`, JSON.stringify(items) , 'utf-8');
+
+          items.forEach(item => allItems.push(item));
         }
         page += 1
       }
+      return {
+        allItems: allItems
+      }
     }
-    async getMyLastVideos() {
-      const token = this.token;
-      //// credentials
-      const clientSecret = process.env.CLIENT_SECRET;
-      const clientId = process.env.CLIENT_ID;
-      const redirectUrl = process.env.REDIRECT_URIS;
-      const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-      oauth2Client.credentials = token;
-      oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
+    // async getMyLastVideos() {
+    //   const tokens = await userService.getUserTokens()
+    //   //// credentials
+    //   const clientSecret = process.env.CLIENT_SECRET;
+    //   const clientId = process.env.CLIENT_ID;
+    //   const redirectUrl = process.env.REDIRECT_URIS;
+    //   const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+    //   oauth2Client.credentials = tokens;
+    //   oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
 
-      let res = await service.playlistItems.list({
-          part: "id,snippet,contentDetails",
-          playlistId: "PLfw2qURVvqds10Nt2t2MrBSGLN1evMCU5",
-          maxResults: 50,
-          auth: oauth2Client
-      });
-      let items = res.data.items
-      console.log('items ', items)
-    }
+    //   let res = await service.playlistItems.list({
+    //       part: "id,snippet,contentDetails",
+    //       playlistId: "PLfw2qURVvqds10Nt2t2MrBSGLN1evMCU5",
+    //       maxResults: 50,
+    //       auth: oauth2Client
+    //   });
+    //   let items = res.data.items
+    //   console.log('items ', items)
+    //   return items;
+    // }
     async saveVideoToDB() {
       let videoData = {
         userID: this.userID,

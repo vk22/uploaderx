@@ -1,4 +1,5 @@
-const userService = require('../services/userService')
+const userService = require('../services/userService');
+const uploadService = require("../services/uploadService");
 
 class UserController {
 
@@ -57,6 +58,20 @@ class UserController {
 
     } catch (e) {
       console.log("getUserTokens ", e);
+      next(e);
+    }
+  }
+
+  async getMyVideos(req, res, next) {
+    try {
+      console.log('req.query ', req.query)
+      const playlistID = req.query.playlistID;
+      const userID = req.query.userID;
+      const data = await uploadService.getMyVideos(userID, playlistID);
+      return res.json(data);
+
+    } catch (e) {
+      console.log("getMyVideos error ", e);
       next(e);
     }
   }

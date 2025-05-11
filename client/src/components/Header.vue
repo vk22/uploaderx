@@ -105,7 +105,7 @@
 
   
   .logo {
-    width: 190px;
+    width: 170px;
   }
 }
 
