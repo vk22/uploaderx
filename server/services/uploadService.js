@@ -82,6 +82,7 @@ class UploadService {
     }
     async setUploadData(uploadData, uploadDir) {
       console.log('setUploadData ', uploadData)
+        this.userID = uploadData.userID;
         this.uploadDir = uploadDir;
         this.title = uploadData.title
         this.description = (uploadData.uploadTemplate === 'KX') ? config.kxDescription : uploadData.description

@@ -1,7 +1,7 @@
 <template>
   <div class="index-page content content--canvas">
-    <div class="hero-background">
-      <video
+    <div class="hero-background" ref="canvasWrap">
+      <!-- <video
         playsinline=""
         autoplay="autoplay"
         muted="muted"
@@ -9,7 +9,8 @@
         class="fullscreen"
       >
         <source src="/gradient.webm" type="video/webm" />
-      </video>
+      </video> -->
+      <canvas ref="myCanvas"></canvas>
     </div>
     <div class="main-hero-section">
       <div class="hero-content">
@@ -50,6 +51,7 @@
 
 
 <script setup>
+  import { ref, onMounted } from 'vue'
   import LoginBtn from '../components/LoginBtn.vue'
   const features = [
         {
@@ -75,10 +77,86 @@
           description:
             "Fast upload and video on your channel! UploaderX has no access to your password, all authentication is done using the YouTube API. ",
         },
-    ]
-    const delay = (i) => {
-      return 0.1 + i/10 + 's'
+  ]
+  const delay = (i) => {
+    return 0.1 + i/10 + 's'
+  }
+
+  function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+  const myCanvas = ref(null);
+  const canvasWrap = ref(null);
+
+  
+
+  onMounted(() => {
+    const myContext = myCanvas.value.getContext('2d');
+    console.log('myCanvas.value 1', myCanvas.value.width)
+
+    let circles = [];
+    const colors = ['red', 'blue', 'green'];
+    function initCirles() {
+      circles = [];
+      let circleCount = 1;
+      for (let i = 0; i < circleCount; i++) {
+        let radius = 50;
+        console.log('myCanvas.value.width ',myCanvas.value.width)
+        let x = randomBetween(radius, myCanvas.value.width = radius);
+        let y = randomBetween(radius, myCanvas.value.height = radius);
+        let dx = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
+        let dy = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
+        let color = colors[Math.floor(Math.random() * colors.length)]
+        //console.log('x, y, dx, dy, radius, color ', x, y, dx, dy, radius, color)
+        
+        circles.push({x, y, dx, dy, radius, color})
+      }
     }
+
+    function drawCircle (circle) {
+        myContext.beginPath();
+        myContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2, false);
+        myContext.fillStyle = circle.color;
+        myContext.fill();
+        myContext.closePath();
+    }
+
+    function animate () {
+      //requestAnimationFrame(animate);
+      myContext.clearRect( 0, 0, myCanvas.value.width, myCanvas.value.height);
+      circles.forEach(circle => {
+        if (circle.x + circle.radius > circle.width || circle.x - circle.radius < 0) {
+          circle.dx = -circle.dx;
+        }
+        if (circle.y + circle.radius > circle.height || circle.y - circle.radius < 0) {
+          circle.dy = -circle.dy;
+        }
+        // circle.x += circle.dx;
+        // circle.y += circle.dy;
+        console.log('circle ', circle)
+        drawCircle(circle);
+      })
+    }
+
+    function resizeCanvas() {
+      myCanvas.value.width = canvasWrap.innerWidth * 2;
+      myCanvas.value.height = canvasWrap.innerHeight * 2;
+
+      initCirles();
+    }
+
+    resizeCanvas();
+
+    console.log('myCanvas.value ', myCanvas.value.width)
+
+    window.addEventListener("resize", resizeCanvas);
+
+    initCirles();
+
+    animate();
+
+  });
+
 </script>
 
 <style lang="scss" scoped>
@@ -180,7 +258,8 @@
     right: 0;
     top: 0rem;
     z-index: 1;
-    height: 500px;
+    width: 100%;
+    height: 100%;
     animation: fadeDown3 4s ease-out;
     animation-fill-mode: forwards;
 
@@ -188,6 +267,10 @@
       opacity: 0.75;
       -webkit-clip-path: inset(2px 2px);
       clip-path: inset(2px 2px);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
     }
   }
 
