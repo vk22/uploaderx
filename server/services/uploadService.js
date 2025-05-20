@@ -15,9 +15,10 @@ const Video = require("../models/video-model");
 const User = require("../models/user-model");
 const axios = require("axios");
 const userService = require('../services/userService');
+const metadataService = require("../services/metadataService");
 const config = require("../config/config");
-
 const sharp = require('sharp');
+const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
   console.log('ffmpegSync ', coverFile, uploadedFileOriginal, orderFolder)
@@ -267,7 +268,8 @@ class UploadService {
           }
         });
     }
-    async getMyVideos(userID, playlistID) {
+
+    async getVideosFromChannel(userID, playlistID) {
       console.log('getMyVideos playlistID ', playlistID)
       const tokens = await userService.getUserTokens(userID)
       //// credentials
@@ -278,6 +280,51 @@ class UploadService {
       oauth2Client.credentials = tokens;
       oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
 
+      let nextPageToken = null
+      let items = undefined
+      let allItems = []
+      let page = 1
+      
+      let { data } = await service.channels.list({
+            part: "id,snippet,contentDetails",
+            forHandle: playlistID,
+            pageToken: nextPageToken,
+            maxResults: 50,
+            auth: oauth2Client
+        });
+
+      if (data) {
+        let uploadsID = data.items[0].contentDetails.relatedPlaylists.uploads;
+        console.log('uploadsID ', uploadsID);
+
+        let res = await service.playlistItems.list({
+            part: "id,snippet,contentDetails",
+            playlistId: uploadsID,
+            pageToken: nextPageToken,
+            maxResults: 50,
+            auth: oauth2Client
+        });
+
+        console.log('res ', res.data.items)
+
+      }  
+
+      
+
+      return {
+        allItems: true
+      }
+    }
+    async getVideosFromPlaylist(userID, playlistID, stringSeparator = '-') {
+      console.log('getMyVideos playlistID ', playlistID)
+      const tokens = await userService.getUserTokens(userID)
+      //// credentials
+      const clientSecret = process.env.CLIENT_SECRET;
+      const clientId = process.env.CLIENT_ID;
+      const redirectUrl = process.env.REDIRECT_URIS;
+      const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+      oauth2Client.credentials = tokens;
+      oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
 
       let nextPageToken = null
       let items = undefined
@@ -294,38 +341,58 @@ class UploadService {
         
         nextPageToken = res.data.nextPageToken
         items = res.data.items;
-        console.log('items ', items)
+        
         if (items) {
           // fs.writeFileSync(`${rootDir}/list-${page}.json`, JSON.stringify(items) , 'utf-8');
 
-          items.forEach(item => allItems.push(item));
+          items.forEach(item => allItems.push(item.snippet.title));
         }
         page += 1
       }
+
+      const goodReleases = await this.afterYoutubeRequest(allItems, stringSeparator);
       return {
-        allItems: allItems
+        allItems: goodReleases
       }
     }
-    // async getMyLastVideos() {
-    //   const tokens = await userService.getUserTokens()
-    //   //// credentials
-    //   const clientSecret = process.env.CLIENT_SECRET;
-    //   const clientId = process.env.CLIENT_ID;
-    //   const redirectUrl = process.env.REDIRECT_URIS;
-    //   const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-    //   oauth2Client.credentials = tokens;
-    //   oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
 
-    //   let res = await service.playlistItems.list({
-    //       part: "id,snippet,contentDetails",
-    //       playlistId: "PLfw2qURVvqds10Nt2t2MrBSGLN1evMCU5",
-    //       maxResults: 50,
-    //       auth: oauth2Client
-    //   });
-    //   let items = res.data.items
-    //   console.log('items ', items)
-    //   return items;
-    // }
+    async afterYoutubeRequest(allItems, stringSeparator) {
+      const goodReleases = []
+      for (let item of allItems) {
+          try {
+            item = item.split("[").shift().split("(").shift();
+            const titleAsArray = item.split(stringSeparator);
+            const artist = titleAsArray[0] ? titleAsArray[0].trim() : '';
+            const title = titleAsArray[1] ? titleAsArray[1].trim() : '';
+            const album = '';
+            const trackData = { artist, title, album };
+            /// Discogs
+            const { success, data } = await metadataService.getDiscogsReleaseOnly({ trackData });
+            if (success) {
+              await sleep(1000);
+              /// Revibed
+              const checkReleaseInRevibedTools = await metadataService.checkReleaseInRevibedTools(data.id);
+              data.releaseExist = checkReleaseInRevibedTools.result
+              data.labelsWarnings = checkReleaseInRevibedTools.labelsWarnings
+
+              console.log('discogsResult ', data)
+              if (data) {
+                const exist = goodReleases.find(item => item.id === data.id)
+                if (!exist) {
+                  goodReleases.push(data)
+                }
+              }
+            }
+
+            await sleep(2000);
+
+          } catch (error) {
+            console.log('error.message ', error.message)
+          }
+      }
+      return goodReleases
+    }
+
     async saveVideoToDB() {
       let videoData = {
         userID: this.userID,

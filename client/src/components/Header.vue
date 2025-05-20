@@ -13,6 +13,7 @@
           </template>
           <v-list>
             <v-list-item to="/profile">Profile</v-list-item>
+            <v-list-item to="/ytb-parser">Parser</v-list-item>
             <v-list-item @click="userLogout">Logout</v-list-item>
           </v-list>
         </v-menu>

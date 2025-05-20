@@ -10,7 +10,7 @@
       >
         <source src="/gradient.webm" type="video/webm" />
       </video> -->
-      <canvas ref="myCanvas"></canvas>
+      <!-- <canvas ref="myCanvas"></canvas> -->
     </div>
     <div class="main-hero-section">
       <div class="hero-content">
@@ -90,72 +90,72 @@
 
   
 
-  onMounted(() => {
-    const myContext = myCanvas.value.getContext('2d');
-    console.log('myCanvas.value 1', myCanvas.value.width)
+  // onMounted(() => {
+  //   const myContext = myCanvas.value.getContext('2d');
+  //   console.log('myCanvas.value 1', myCanvas.value.width)
 
-    let circles = [];
-    const colors = ['red', 'blue', 'green'];
-    function initCirles() {
-      circles = [];
-      let circleCount = 1;
-      for (let i = 0; i < circleCount; i++) {
-        let radius = 50;
-        console.log('myCanvas.value.width ',myCanvas.value.width)
-        let x = randomBetween(radius, myCanvas.value.width = radius);
-        let y = randomBetween(radius, myCanvas.value.height = radius);
-        let dx = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
-        let dy = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
-        let color = colors[Math.floor(Math.random() * colors.length)]
-        //console.log('x, y, dx, dy, radius, color ', x, y, dx, dy, radius, color)
+  //   let circles = [];
+  //   const colors = ['red', 'blue', 'green'];
+  //   function initCirles() {
+  //     circles = [];
+  //     let circleCount = 1;
+  //     for (let i = 0; i < circleCount; i++) {
+  //       let radius = 50;
+  //       console.log('myCanvas.value.width ',myCanvas.value.width)
+  //       let x = randomBetween(radius, myCanvas.value.width = radius);
+  //       let y = randomBetween(radius, myCanvas.value.height = radius);
+  //       let dx = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
+  //       let dy = randomBetween(myCanvas.value.width / -200, myCanvas.value.width / 200);
+  //       let color = colors[Math.floor(Math.random() * colors.length)]
+  //       //console.log('x, y, dx, dy, radius, color ', x, y, dx, dy, radius, color)
         
-        circles.push({x, y, dx, dy, radius, color})
-      }
-    }
+  //       circles.push({x, y, dx, dy, radius, color})
+  //     }
+  //   }
 
-    function drawCircle (circle) {
-        myContext.beginPath();
-        myContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2, false);
-        myContext.fillStyle = circle.color;
-        myContext.fill();
-        myContext.closePath();
-    }
+  //   function drawCircle (circle) {
+  //       myContext.beginPath();
+  //       myContext.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2, false);
+  //       myContext.fillStyle = circle.color;
+  //       myContext.fill();
+  //       myContext.closePath();
+  //   }
 
-    function animate () {
-      //requestAnimationFrame(animate);
-      myContext.clearRect( 0, 0, myCanvas.value.width, myCanvas.value.height);
-      circles.forEach(circle => {
-        if (circle.x + circle.radius > circle.width || circle.x - circle.radius < 0) {
-          circle.dx = -circle.dx;
-        }
-        if (circle.y + circle.radius > circle.height || circle.y - circle.radius < 0) {
-          circle.dy = -circle.dy;
-        }
-        // circle.x += circle.dx;
-        // circle.y += circle.dy;
-        console.log('circle ', circle)
-        drawCircle(circle);
-      })
-    }
+  //   function animate () {
+  //     //requestAnimationFrame(animate);
+  //     myContext.clearRect( 0, 0, myCanvas.value.width, myCanvas.value.height);
+  //     circles.forEach(circle => {
+  //       if (circle.x + circle.radius > circle.width || circle.x - circle.radius < 0) {
+  //         circle.dx = -circle.dx;
+  //       }
+  //       if (circle.y + circle.radius > circle.height || circle.y - circle.radius < 0) {
+  //         circle.dy = -circle.dy;
+  //       }
+  //       // circle.x += circle.dx;
+  //       // circle.y += circle.dy;
+  //       console.log('circle ', circle)
+  //       drawCircle(circle);
+  //     })
+  //   }
 
-    function resizeCanvas() {
-      myCanvas.value.width = canvasWrap.innerWidth * 2;
-      myCanvas.value.height = canvasWrap.innerHeight * 2;
+  //   function resizeCanvas() {
+  //     myCanvas.value.width = canvasWrap.innerWidth * 2;
+  //     myCanvas.value.height = canvasWrap.innerHeight * 2;
 
-      initCirles();
-    }
+  //     initCirles();
+  //   }
 
-    resizeCanvas();
+  //   resizeCanvas();
 
-    console.log('myCanvas.value ', myCanvas.value.width)
+  //   console.log('myCanvas.value ', myCanvas.value.width)
 
-    window.addEventListener("resize", resizeCanvas);
+  //   window.addEventListener("resize", resizeCanvas);
 
-    initCirles();
+  //   initCirles();
 
-    animate();
+  //   animate();
 
-  });
+  // });
 
 </script>
 

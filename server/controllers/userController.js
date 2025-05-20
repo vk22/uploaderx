@@ -62,12 +62,13 @@ class UserController {
     }
   }
 
-  async getMyVideos(req, res, next) {
+  async getVideosFromPlaylist(req, res, next) {
     try {
       console.log('req.query ', req.query)
       const playlistID = req.query.playlistID;
       const userID = req.query.userID;
-      const data = await uploadService.getMyVideos(userID, playlistID);
+      const separator = req.query.separator
+      const data = await uploadService.getVideosFromPlaylist(userID, playlistID, separator);
       return res.json(data);
 
     } catch (e) {
@@ -76,6 +77,22 @@ class UserController {
     }
   }
 
+  async getVideosFromChannel(req, res, next) {
+    try {
+      console.log('req.query ', req.query)
+      const playlistID = req.query.playlistID;
+      const userID = req.query.userID;
+      const data = await uploadService.getVideosFromChannel(userID, playlistID);
+      return res.json(data);
+
+    } catch (e) {
+      console.log("getMyVideos error ", e);
+      next(e);
+    }
+  }
+
+
+  
   
 
   checkUser(req, res) {

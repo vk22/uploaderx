@@ -3,8 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import About from '../views/about.vue'
 import Privacy from '../views/privacy.vue'
 import Terms from '../views/terms.vue'
-import UploadNew from '@/views/upload-new.vue'
+import UploadNew from '../views/upload-new.vue'
 import Profile from '../views/profile.vue'
+import YtbParser from '../views/ytb-parser.vue'
 import Admin from '../views/admin.vue'
 
 const router = createRouter({
@@ -39,6 +40,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: Profile
+    },
+    {
+      path: '/ytb-parser',
+      name: 'ytb-parser',
+      component: YtbParser
     },
     {
       path: '/admin',
