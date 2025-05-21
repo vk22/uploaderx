@@ -13,7 +13,7 @@
           </template>
           <v-list>
             <v-list-item to="/profile">Profile</v-list-item>
-            <v-list-item to="/ytb-parser">Parser</v-list-item>
+            <v-list-item to="/ytb-parser" v-if="admins.includes(user.id)">Parser</v-list-item>
             <v-list-item @click="userLogout">Logout</v-list-item>
           </v-list>
         </v-menu>
@@ -28,13 +28,11 @@
   const authStore = useAuthStore();
   const loggedIn = computed(() => authStore.authenticated);
   const user = computed(() => authStore.user);
-  console.log('user ', user)
-
+  const admins = ['102814452894667054158', '104745960371715319263', '105940082211804843973'];
   const userLogout = (event) => {
     event.preventDefault()
     authStore.logout()
   }
-
 </script>
 
 

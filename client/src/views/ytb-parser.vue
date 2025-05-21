@@ -120,7 +120,7 @@ const wantlist = ref([]);
 const searchYtbResult = ref("");
 const separator = ref('-');
 const playlistLink = ref("");
-const playlistID = computed(() => playlistID.value.split('=').pop());
+const playlistID = computed(() => playlistLink.value.split('=').pop());
 
 
 
