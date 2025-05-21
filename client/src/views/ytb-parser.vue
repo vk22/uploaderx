@@ -19,10 +19,10 @@
           <v-col>
             <div class="discogs-field">
               <v-text-field
-                v-model="playlistID"
+                v-model="playlistLink"
                 variant="outlined"
                 clearable
-                label="Playlist ID"
+                label="Playlist Link"
                 type="text"
                 style="width:90%"
               >
@@ -117,9 +117,12 @@ const uploadingState = computed(() => mainStore.getUploadingState);
 const progressColor = computed(() => mainStore.getProgressColor);
 
 const wantlist = ref([]);
-const playlistID = ref("");
 const searchYtbResult = ref("");
 const separator = ref('-');
+const playlistLink = ref("");
+const playlistID = computed(() => playlistID.value.split('=').pop());
+
+
 
 const searchYtb = async () => {
   mainStore.setFileLoading(true);
