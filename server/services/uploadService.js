@@ -446,7 +446,7 @@ class UploadService {
         headers: {
           'content-type': 'application/json',
           'accept': 'application/json',
-          'x-api-key': 'l74b9ba9qmext9a6ulniigq8'
+          'x-api-key': process.env.RTOOLS_API_KEY
         }
       })
       .then((response) => {
