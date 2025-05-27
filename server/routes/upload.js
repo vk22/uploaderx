@@ -5,7 +5,7 @@ const uploadController = require('../controllers/uploadController')
 const metadataController = require("../controllers/metadataController");
 const rootDir = process.env.ROOT_DIR;
 const uploadDir =  rootDir + "/uploads";
-const uploadDirRVBD =  rootDir + "uploads/auto/audio";
+const uploadDirRVBD =  rootDir + "/uploads/auto/audio";
 const storageFiles = multer.diskStorage({
   destination: function (req, file, cb) {
     const userID = req.query.user
