@@ -22,13 +22,13 @@ const Video = require("../models/video-model");
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 const startAutoUpload = async (req, res) => {
+  console.log('startAutoUpload ', req.body)
   const uploadData = req.body.data
   const userID = uploadData.userID
   const files = fs.readdirSync(`${autoUploadDir}/audio`)
   const uploadUserDir = `${uploadDir}/${userID}`; 
   // const newUpload = new UploadItem(uploadData, uploadUserDir)
   await uploadService.setUploadData(uploadData, uploadUserDir)
-
 
   for (const file of files) {
     if (file !== '.DS_Store') {

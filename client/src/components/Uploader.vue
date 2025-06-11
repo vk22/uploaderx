@@ -926,7 +926,7 @@ async function startAutoUpload() {
               data = {
                 userID: user.value.id,
                 uploadTemplate: '2',
-                privacyStatus: 'public'
+                privacyStatus: 'unlisted'
               }
           }
           await axios.post("/api/start-auto-upload", { data: data });
