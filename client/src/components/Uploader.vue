@@ -797,7 +797,7 @@ function checkInputsOnErrors() {
     inputErrors.value.push("Cover");
   }
   if (!audioData.value.discogsRelease.id) {
-      inputErrors.value.push("Discogs Release ID");
+      inputErrors.value.push("Link on Discogs Release Page");
   }
 }
 async function startUpload() {
