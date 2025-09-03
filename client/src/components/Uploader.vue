@@ -736,13 +736,14 @@ function uploaderHelper(data) {
   setTimeout(() => {
     mainStore.addAlert(data);
   }, 500);
+
   if (data.active) {
     //console.log('data ', data.message.length)
     setTimeout(() => {
       mainStore.removeAlert({
         id: data.id,
       });
-    }, data.message.length * 85);
+    }, data.message.length * 120);
   }
 }
 function generateRandomNum() {
@@ -790,17 +791,28 @@ function setAllField(release, cover) {
 function checkInputsOnErrors() {
   inputErrors.value = [];
   if (!videoData.value.title || videoData.value.title === "") {
-    inputErrors.value.push("title");
+    inputErrors.value.push("Title");
   }
   if (!videoData.value.pictureURL || videoData.value.pictureURL === undefined) {
-    inputErrors.value.push("cover");
+    inputErrors.value.push("Cover");
+  }
+  if (!audioData.value.discogsRelease.id) {
+      inputErrors.value.push("Discogs Release ID");
   }
 }
 async function startUpload() {
   //console.log('startUpload ', this.releaseCoverIsUploaded)
 
   checkInputsOnErrors();
-  if (inputErrors.value.length) return;
+  if (inputErrors.value.length) {
+    uploaderHelper({
+      active: true,
+      variant: "error",
+      title: "Tags helper:",
+      message: `You must fill in these fields: ${inputErrors.value.join(', ')}`,
+    });
+    return;
+  };
 
   mainStore.setFileLoading(true);
   mainStore.setUploadingState("Uploading file...");

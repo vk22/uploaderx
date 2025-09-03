@@ -116,6 +116,7 @@ const borderColor = (variant) => {
   color: #252525;
   position: relative;
   max-width: 500px;
+  min-width: 500px;
   //transform: translate(-50%, -50%);
   margin: 0 auto; // Without this the box extends the width of the page
   padding: 1rem 3rem 1rem 0.5rem;
@@ -145,6 +146,7 @@ const borderColor = (variant) => {
 
   .alert-message {
     display: flex;
+    align-items: center;
 
     .image {
       display: flex;

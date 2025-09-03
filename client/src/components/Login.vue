@@ -1,7 +1,7 @@
 <template>
   <div class="index-page content content--canvas">
     <div class="hero-background" ref="canvasWrap">
-      <!-- <video
+      <video
         playsinline=""
         autoplay="autoplay"
         muted="muted"
@@ -9,14 +9,14 @@
         class="fullscreen"
       >
         <source src="/gradient.webm" type="video/webm" />
-      </video> -->
+      </video>
       <!-- <canvas ref="myCanvas"></canvas> -->
     </div>
     <div class="main-hero-section">
       <div class="hero-content">
         <div class="hero-icons">
           <img src="/audio-b.svg" alt="" />
-          <img src="/arrow.svg" alt="" />
+          <img src="/arrow.svg" alt="" style="height: 40px;"/>
           <img src="/youtube.svg" alt="" />
         </div>
         <h1 class="hero-title">Smart<br>Music Uploader</h1>
@@ -296,6 +296,7 @@
         display: flex;
         margin-bottom: 3rem;
         height: 62px;
+        align-items: center;
         & > * {
           padding: 1rem;
         }
@@ -306,7 +307,7 @@
         font-size: 7rem;
         text-align: center;
         line-height: 7.5rem;
-        font-weight: 800;
+        font-weight: 700;
         color: #0d0d0d;
 
         @include for-phone-only {
