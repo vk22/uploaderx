@@ -20,36 +20,72 @@ const config = require("../config/config");
 const sharp = require('sharp');
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+// function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
+//   console.log('ffmpegSync ', coverFile, uploadedFileOriginal, orderFolder)
+//     // ffmpeg -loop 1 -framerate 1 -i cover.jpg -i audio.aif -c copy -shortest output.mkv
+//     return new Promise((resolve, reject) => {
+//       ffmpeg()
+//         .input(coverFile)
+//         .loop()
+//         .addInputOption("-framerate 1")
+//         .input(uploadedFileOriginal)
+//         .audioCodec("copy")
+//         .outputOptions(["-shortest"])
+//         .output(orderFolder + "/output.mkv")
+//         .on("start", function (commandLine) {
+//           console.log("Converting to .mkv");
+//           console.log(commandLine);
+//         })
+//         .on("progress", function (progress) {
+//           console.log(+progress.percent);
+//           // console.log(+Math.round(progress.percent));
+//         })
+//         .on("error", function (err) {
+//           console.log("An error occurred: " + err.message);
+//         })
+//         .on("end", function (data) {
+//           console.log("Convert to .mkv: Processing finished !" + data);
+//           resolve(orderFolder + "/output.mkv");
+//         })
+//         .run();
+//     });
+//   }
+
 function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
-  console.log('ffmpegSync ', coverFile, uploadedFileOriginal, orderFolder)
-    // ffmpeg -loop 1 -framerate 1 -i cover.jpg -i audio.aif -c copy -shortest output.mkv
-    return new Promise((resolve, reject) => {
-      ffmpeg()
-        .input(coverFile)
-        .loop()
-        .addInputOption("-framerate 1")
-        .input(uploadedFileOriginal)
-        .audioCodec("copy")
-        .outputOptions(["-shortest"])
-        .output(orderFolder + "/output.mkv")
-        .on("start", function (commandLine) {
-          console.log("Converting to .mkv");
-          console.log(commandLine);
-        })
-        .on("progress", function (progress) {
-          console.log(+progress.percent);
-          // console.log(+Math.round(progress.percent));
-        })
-        .on("error", function (err) {
-          console.log("An error occurred: " + err.message);
-        })
-        .on("end", function (data) {
-          console.log("Convert to .mkv: Processing finished !" + data);
-          resolve(orderFolder + "/output.mkv");
-        })
-        .run();
-    });
-  }
+  return new Promise((resolve, reject) => {
+    ffmpeg()
+      .input(coverFile)
+      .loop()
+      .inputOptions(["-framerate 1"])
+      .input(uploadedFileOriginal)
+      .outputOptions([
+        "-vf scale=1280:-1",
+        "-c:v libx264",
+        "-preset ultrafast",
+        "-tune stillimage",
+        "-crf 30",
+        "-pix_fmt yuv420p",
+        "-c:a copy",
+        "-shortest",
+        "-threads 1"
+      ])
+      .output(`${orderFolder}/output.mp4`)
+      .on("start", cmd => console.log("FFmpeg started:", cmd))
+      .on("progress", progress => {
+        if (progress.percent && progress.percent % 10 < 1)
+          console.log(`Progress: ${progress.percent.toFixed(0)}%`);
+      })
+      .on("error", err => {
+        console.error("FFmpeg error:", err.message);
+        reject(err);
+      })
+      .on("end", () => {
+        console.log("FFmpeg finished!");
+        resolve(`${orderFolder}/output.mp4`);
+      })
+      .run();
+  });
+}
 
 class UploadService {
     constructor() {
