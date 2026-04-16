@@ -65,19 +65,19 @@ class MetadataService {
 
   /// Get Discogs  
   async getDiscogs(data) {
-    console.log('getDiscogs ', data)
+    // console.log('getDiscogs ', data)
     const { trackData, user, coverNeed } = data
 
-    console.log('trackData ', trackData)
+    // console.log('trackData ', trackData)
     let mainResult;
     let searchResult;
     //coverNeed = true;
 
     /// searchResult запрос 
     const query1 = prepareQuery(trackData)
-    console.log('query1 ', query1)
+    // console.log('query1 ', query1)
     const { results } = await db.search(query1);
-    console.log('results ', results)
+    // console.log('results ', results)
 
     if (!results.length) {
       return {

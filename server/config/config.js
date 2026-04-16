@@ -2,10 +2,6 @@ module.exports = {
   port: 5000,
   dbURL: 'mongodb://127.0.0.1:27017/ytbuploader',
   dbOptions: { useUnifiedTopology: true, useNewUrlParser: true },
-  rootDir: '/Users/user/Works_SSD/uploaderx/client/public',
-  // autoUploadDir: '/Users/viktorkusnir/apps/uploaderV3/client/public/uploads/auto',
-  //rootDir: '/var/www/uploader/www/client/public',
-  autoUploadDir: '/var/www/uploader/www/client/public/uploads/auto',
   secret: 'zzz',
   credentials: {
     "client_id": "567094205545-j5ed0fqndfju3jnknb7ttn7q11vn5t7f.apps.googleusercontent.com",
