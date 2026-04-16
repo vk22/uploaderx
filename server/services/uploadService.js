@@ -53,35 +53,40 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
   return new Promise((resolve, reject) => {
+    const outputPath = path.join(orderFolder, "output.mp4");
+
     ffmpeg()
       .input(coverFile)
-      .loop()
-      .inputOptions(["-framerate 1"])
+      .inputOptions(["-loop 1", "-framerate 1"])
       .input(uploadedFileOriginal)
       .outputOptions([
-        "-vf scale=1280:-1",
+        "-vf scale=1280:-2",
         "-c:v libx264",
         "-preset ultrafast",
         "-tune stillimage",
         "-crf 30",
         "-pix_fmt yuv420p",
-        "-c:a copy",
+        "-c:a aac",
+        "-b:a 320k",
+        "-ar 44100",
+        "-movflags +faststart",
         "-shortest",
-        "-threads 1"
+        "-threads 1",
       ])
-      .output(`${orderFolder}/output.mp4`)
-      .on("start", cmd => console.log("FFmpeg started:", cmd))
-      .on("progress", progress => {
-        if (progress.percent && progress.percent % 10 < 1)
-          console.log(`Progress: ${progress.percent.toFixed(0)}%`);
+      .output(outputPath)
+      .on("start", (cmd) => console.log("FFmpeg started:", cmd))
+      .on("progress", (progress) => {
+        if (typeof progress.percent === "number") {
+          console.log(`Progress: ${Math.min(100, progress.percent).toFixed(0)}%`);
+        }
       })
-      .on("error", err => {
+      .on("error", (err) => {
         console.error("FFmpeg error:", err.message);
         reject(err);
       })
       .on("end", () => {
         console.log("FFmpeg finished!");
-        resolve(`${orderFolder}/output.mp4`);
+        resolve(outputPath);
       })
       .run();
   });
