@@ -250,36 +250,6 @@ class UploadService {
                 if (data) {
                     console.log("Video Insert Done.", data.data);
       
-                    //// Add to Playlist IF KX
-                    if (uploadTemplate === "KX") {
-
-                        service.playlistItems.insert({
-                            part: "id,snippet",
-                            resource: {
-                            snippet: {
-                                playlistId: "PLfw2qURVvqds10Nt2t2MrBSGLN1evMCU5",
-                                resourceId: {
-                                videoId: data.data.id,
-                                kind: "youtube#video",
-                                },
-                            },
-                            },
-                            auth: oauth2Client,
-                        },
-                        function (err, data, response) {
-                            if (err) {
-                            console.log("Error.", err);
-                            } else if (data) {
-                            console.log("Video Added To Playlist.", data.data.id);
-                            }
-                            if (response) {
-                            console.log("Status code: " + response.statusCode);
-                            }
-                        });
-
-                        ////
-                        this.sendUplodedItemToRevibed(data.data, releaseID)
-                    }
                     if (this.userID === '102814452894667054158' || this.userID === '104745960371715319263') {
                       console.log("sendUplodedItemToRevibed...");
                       this.sendUplodedItemToRevibed(data.data, releaseID)
