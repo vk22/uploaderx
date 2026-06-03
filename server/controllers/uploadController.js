@@ -126,6 +126,10 @@ const uploadFiles = async (req, res) => {
       success: true,
       message: pushVideo.message,
       url: pushVideo.url,
+      video: pushVideo.video,
+      youtube: pushVideo.youtube,
+      integrations: pushVideo.integrations,
+      warnings: pushVideo.warnings,
       userId: userID
     });
 
@@ -133,14 +137,23 @@ const uploadFiles = async (req, res) => {
     req.io.sockets.emit("pushToYoutube", {
       success: false,
       message: pushVideo.message,
+      youtube: pushVideo.youtube,
+      integrations: pushVideo.integrations,
+      errors: pushVideo.errors,
+      warnings: pushVideo.warnings,
       userId: userID
     });
   }
 
   res.json({
-    success: true,
-    message: "All works is done!",
-    //videoCover: generateVideoCoverRes,
+    success: pushVideo.success,
+    message: pushVideo.message,
+    url: pushVideo.url,
+    video: pushVideo.video,
+    youtube: pushVideo.youtube,
+    integrations: pushVideo.integrations,
+    errors: pushVideo.errors,
+    warnings: pushVideo.warnings,
   });
 };
 
@@ -248,10 +261,15 @@ const uploadFileRVBD = async (req, res) => {
     //   userId: userID
     // });
 
-    return res.json({
+    return res.status(pushVideo.success ? 200 : getPushToYoutubeHttpStatus(pushVideo)).json({
       success: pushVideo.success,
       message: pushVideo.message,
       url: pushVideo.url,
+      video: pushVideo.video,
+      youtube: pushVideo.youtube,
+      integrations: pushVideo.integrations,
+      errors: pushVideo.errors,
+      warnings: pushVideo.warnings,
       releaseID,
       discogs: discogsResult.data,
     });
@@ -349,6 +367,23 @@ function buildReleaseDescription(release) {
     lines.push(`Discogs: ${release.link}`);
   }
   return lines.join('\n');
+}
+
+function getPushToYoutubeHttpStatus(pushVideo) {
+  const status = pushVideo.errors && pushVideo.errors[0] && pushVideo.errors[0].status;
+  if (status === "validation_failed") {
+    return 400;
+  }
+  if (status === "auth_failed") {
+    return 401;
+  }
+  if (status === "configuration_failed") {
+    return 500;
+  }
+  if (status === "youtube_upload_failed") {
+    return 502;
+  }
+  return 500;
 }
 
 

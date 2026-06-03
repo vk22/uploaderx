@@ -206,85 +206,169 @@ class UploadService {
         return file
     }
     async pushToYoutube(releaseID) {
-        /// get tokens from BD
-        const tokens = await userService.getUserTokens(this.userID)
-        const file = this.videoMusic;
-        const title = this.title;
-        const uploadTemplate = this.uploadTemplate;
-        const description = this.description
-        const tags = this.tags;
-        const privacyStatus = this.privacyStatus
-        // //// credentials
-        const clientSecret = process.env.CLIENT_SECRET;
-        const clientId = process.env.CLIENT_ID;
-        const redirectUrl = '';
-        const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-        oauth2Client.credentials = tokens;
-        oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
+      const result = this.createPushResult(releaseID);
 
-        console.log('uploading... ', title)
-        console.log('uploading... ', description)
+      try {
+        this.validateYoutubeUploadInput();
 
-        return new Promise((resolve, reject) => {
-          try {
-            service.videos.insert({
-                resource: {
-                  snippet: {
-                    title: title,
-                    description: description,
-                    categoryId: 10,
-                    tags: tags,
-                  },
-                  status: {
-                    privacyStatus: privacyStatus,
-                    license: "youtube",
-                  },
-                },
-                auth: oauth2Client,
-                part: "snippet,status",
-                media: {
-                  body: fs.createReadStream(file),
-                },
-              },
-              (err, data) => {
-                if (data) {
-                    console.log("Video Insert Done.", data.data);
-      
-                    if (this.userID === '102814452894667054158' || this.userID === '104745960371715319263') {
-                      console.log("sendUplodedItemToRevibed...");
-                      this.sendUplodedItemToRevibed(data.data, releaseID)
-                    }
+        const oauth2Client = await this.createYoutubeClient();
+        const video = await this.uploadVideoToYoutube(oauth2Client);
 
-                    this.pushVideo = {
-                        success: true,
-                        message: "File uploaded",
-                        url: data.data.id
-                    }
-                    
-                    resolve(this.pushVideo);
-                }
-      
-                if (err) {
-                    console.log("Error.", err);
-                    this.pushVideo = {
-                        success: false,
-                        message: err,
-                        url: null,
-                    }
-                    resolve(this.pushVideo);
-                }
-              }
-            );
-          } catch (error) {
-            console.log(error);
-            this.pushVideo = {
-              success: false,
-              message: error,
-              url: null,
-            }
-            resolve(this.pushVideo);
+        result.success = true;
+        result.status = "uploaded";
+        result.message = "File uploaded";
+        result.url = video.id;
+        result.video = {
+          id: video.id,
+          url: `https://www.youtube.com/watch?v=${video.id}`,
+          title: video.snippet?.title || this.title,
+          publishedAt: video.snippet?.publishedAt || null,
+          thumbnails: video.snippet?.thumbnails || null,
+        };
+        result.youtube.upload = {
+          success: true,
+          response: video,
+        };
+
+        if (this.shouldSendToRevibed()) {
+          console.log("sendUplodedItemToRevibed...");
+          result.integrations.revibed = await this.sendUplodedItemToRevibed(video, releaseID);
+          if (!result.integrations.revibed.success) {
+            result.warnings.push({
+              code: "REVIBED_SEND_FAILED",
+              message: result.integrations.revibed.error?.message || "Revibed integration failed",
+              details: result.integrations.revibed,
+            });
           }
-        });
+        } else {
+          result.integrations.revibed = {
+            success: true,
+            status: "skipped",
+            reason: "User is not configured for Revibed sync",
+          };
+        }
+
+        this.pushVideo = {
+          success: true,
+          message: result.message,
+          url: video.id,
+          videoId: video.id,
+          youtubeUrl: result.video.url,
+        };
+
+        return result;
+      } catch (error) {
+        const normalizedError = normalizeError(error);
+        console.log("pushToYoutube error ", normalizedError);
+
+        result.success = false;
+        result.status = normalizedError.status || "youtube_upload_failed";
+        result.message = normalizedError.message;
+        result.errors.push(normalizedError);
+        result.youtube.upload = {
+          success: false,
+          error: normalizedError,
+        };
+
+        this.pushVideo = {
+          success: false,
+          message: normalizedError.message,
+          url: null,
+          error: normalizedError,
+        };
+
+        return result;
+      }
+    }
+
+    createPushResult(releaseID) {
+      return {
+        success: false,
+        status: "pending",
+        message: undefined,
+        url: null,
+        releaseID: releaseID || null,
+        video: null,
+        youtube: {
+          upload: null,
+        },
+        integrations: {
+          revibed: null,
+        },
+        errors: [],
+        warnings: [],
+      };
+    }
+
+    validateYoutubeUploadInput() {
+      if (!this.userID) {
+        throw createUploadError("YOUTUBE_USER_REQUIRED", "YouTube userID is required", "validation_failed");
+      }
+      if (!this.videoMusic) {
+        throw createUploadError("VIDEO_FILE_REQUIRED", "Video file is required", "validation_failed");
+      }
+      if (!fs.existsSync(this.videoMusic)) {
+        throw createUploadError("VIDEO_FILE_NOT_FOUND", `Video file not found: ${this.videoMusic}`, "validation_failed");
+      }
+      if (!this.title) {
+        throw createUploadError("YOUTUBE_TITLE_REQUIRED", "YouTube title is required", "validation_failed");
+      }
+      if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+        throw createUploadError("YOUTUBE_CREDENTIALS_REQUIRED", "YouTube OAuth credentials are required", "configuration_failed");
+      }
+    }
+
+    async createYoutubeClient() {
+      const tokens = await userService.getUserTokens(this.userID);
+      if (!tokens || !tokens.access_token) {
+        throw createUploadError("YOUTUBE_TOKENS_REQUIRED", "YouTube user tokens are missing or invalid", "auth_failed");
+      }
+
+      const oauth2Client = new OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, '');
+      oauth2Client.credentials = tokens;
+      oauth2Client.scopes = ["https://www.googleapis.com/auth/youtube"];
+      return oauth2Client;
+    }
+
+    async uploadVideoToYoutube(oauth2Client) {
+      console.log('uploading... ', this.title)
+      console.log('uploading... ', this.description)
+
+      const response = await service.videos.insert({
+        resource: {
+          snippet: {
+            title: this.title,
+            description: this.description || "",
+            categoryId: 10,
+            tags: normalizeTags(this.tags),
+          },
+          status: {
+            privacyStatus: this.privacyStatus || "unlisted",
+            license: "youtube",
+          },
+        },
+        auth: oauth2Client,
+        part: "snippet,status",
+        media: {
+          body: fs.createReadStream(this.videoMusic),
+        },
+      });
+
+      if (!response || !response.data || !response.data.id) {
+        throw createUploadError(
+          "YOUTUBE_UPLOAD_EMPTY_RESPONSE",
+          "YouTube upload finished without a video id",
+          "youtube_upload_failed",
+          response?.data
+        );
+      }
+
+      console.log("Video Insert Done.", response.data);
+      return response.data;
+    }
+
+    shouldSendToRevibed() {
+      return this.userID === '102814452894667054158' || this.userID === '104745960371715319263';
     }
 
     async getVideosFromChannel(userID, playlistID) {
@@ -455,23 +539,51 @@ class UploadService {
     async sendUplodedItemToRevibed(data, releaseID) {
       let newYoutubeItem = {
         videoId: data.id,
-        title: data.snippet.title,
-        publishedAt: data.snippet.publishedAt,
-        thumbnails: data.snippet.thumbnails ? data.snippet.thumbnails : null,
+        title: data.snippet?.title || this.title,
+        publishedAt: data.snippet?.publishedAt || null,
+        thumbnails: data.snippet?.thumbnails ? data.snippet.thumbnails : null,
         releaseID: releaseID ? releaseID : null
       }
-      axios.post('https://tools.revibed.com/api/add-youtube', newYoutubeItem, {
-        headers: {
-          'content-type': 'application/json',
-          'accept': 'application/json',
-          'x-api-key': process.env.RTOOLS_API_KEY
-        }
-      })
-      .then((response) => {
+
+      if (!process.env.RTOOLS_API_KEY) {
+        return {
+          success: false,
+          status: "configuration_failed",
+          error: {
+            code: "REVIBED_API_KEY_REQUIRED",
+            message: "Revibed API key is required",
+          },
+          payload: newYoutubeItem,
+        };
+      }
+
+      try {
+        const response = await axios.post('https://tools.revibed.com/api/add-youtube', newYoutubeItem, {
+          headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            'x-api-key': process.env.RTOOLS_API_KEY
+          }
+        });
         console.log(response.data);
-      }, (error) => {
-        console.log(error);
-      });
+
+        return {
+          success: true,
+          status: "sent",
+          response: response.data,
+          payload: newYoutubeItem,
+        };
+      } catch (error) {
+        const normalizedError = normalizeError(error, "revibed_failed");
+        console.log("sendUplodedItemToRevibed error ", normalizedError);
+
+        return {
+          success: false,
+          status: normalizedError.status,
+          error: normalizedError,
+          payload: newYoutubeItem,
+        };
+      }
 
     }
     toString() {
@@ -508,5 +620,38 @@ async function convertToJPG(startImage, finalImage) {
   }
 }
 
-module.exports = UploadService;
+function createUploadError(code, message, status, details) {
+  const error = new Error(message);
+  error.code = code;
+  error.status = status;
+  error.details = details;
+  return error;
+}
 
+function normalizeError(error, fallbackStatus = "failed") {
+  const responseData = error?.response?.data;
+  const responseStatus = error?.response?.status;
+
+  return {
+    code: error?.code || responseData?.error?.code || "UNKNOWN_ERROR",
+    status: error?.status || fallbackStatus,
+    message: error?.message || responseData?.error?.message || "Unknown error",
+    httpStatus: responseStatus || null,
+    details: error?.details || responseData || null,
+  };
+}
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags.filter(Boolean);
+  }
+  if (typeof tags === "string") {
+    return tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+  return undefined;
+}
+
+module.exports = UploadService;
