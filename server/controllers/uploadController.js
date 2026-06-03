@@ -15,7 +15,7 @@ const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 const kxTitle = uploadDir + "/kx-title.png";
 // const UploadItem = require('./uploadItem.js');
-const uploadService = require("../services/uploadService");
+const UploadService = require("../services/uploadService");
 const metadataService = require("../services/metadataService");
 const Video = require("../models/video-model");
 
@@ -27,6 +27,7 @@ const startAutoUpload = async (req, res) => {
   const userID = uploadData.userID
   const files = fs.readdirSync(`${autoUploadDir}/audio`)
   const uploadUserDir = `${uploadDir}/${userID}`; 
+  const uploadService = new UploadService()
   // const newUpload = new UploadItem(uploadData, uploadUserDir)
   await uploadService.setUploadData(uploadData, uploadUserDir)
 
@@ -70,11 +71,13 @@ const startAutoUpload = async (req, res) => {
 
 const getAllMyVideos = async (req, res) => {
   console.log('getAllMyVideos', req.body.data)
+  const uploadService = new UploadService()
   await uploadService.getMyVideos()
 }
 
 const getMyLastVideos = async (req, res) => {
   console.log('getAllMyVideos', req.body.data)
+  const uploadService = new UploadService()
   await uploadService.getMyLastVideos()
 }
 
@@ -90,6 +93,7 @@ const uploadFiles = async (req, res) => {
 
   const uploadUserDir = `${uploadDir}/${userID}`;
   const uploadedFiles = req.files
+  const uploadService = new UploadService()
 
   req.io.sockets.emit("fileUploaded", {
     success: true,
@@ -107,12 +111,12 @@ const uploadFiles = async (req, res) => {
     userId: userID
   });
 
-  await uploadService.pushToYoutube(releaseID)
+  const pushVideo = await uploadService.pushToYoutube(releaseID)
   // console.log('newUpload ', newUpload)
 
-  console.log('uploadService.pushVideo ', uploadService.pushVideo)
+  console.log('pushVideo ', pushVideo)
 
-  if (uploadService.pushVideo.success) {
+  if (pushVideo.success) {
     
     //// save
     await uploadService.saveVideoToDB()
@@ -120,15 +124,15 @@ const uploadFiles = async (req, res) => {
     
     req.io.sockets.emit("pushToYoutube", {
       success: true,
-      message: uploadService.pushVideo.message,
-      url: uploadService.pushVideo.url,
+      message: pushVideo.message,
+      url: pushVideo.url,
       userId: userID
     });
 
   } else {
     req.io.sockets.emit("pushToYoutube", {
       success: false,
-      message: uploadService.pushVideo.message,
+      message: pushVideo.message,
       userId: userID
     });
   }
@@ -141,19 +145,123 @@ const uploadFiles = async (req, res) => {
 };
 
 const uploadFileRVBD = async (req, res) => {
-  /// request handler 
-  console.log('uploadFileRVBD ', req.body)
-  console.log('uploadFileRVBD ', req.files)
-  const uploadData = req.body;
-  const userID = req.body.user;
-  const uploadUserDir = `${uploadDir}/${userID}`;
-  const uploadedFiles = req.files
+  try {
+    console.log('uploadFileRVBD ', req.body)
+    console.log('uploadFileRVBD ', req.files)
 
-  res.json({
-    success: true,
-    message: "uploadFileRVBD is done!",
-    //videoCover: generateVideoCoverRes,
-  });
+    const uploadedFile = req.files && req.files[0]
+    if (!uploadedFile) {
+      return res.status(400).json({
+        success: false,
+        message: "Audio file is required",
+      });
+    }
+
+    const uploadData = req.body;
+    const userID = req.body.userID || req.body.user;
+    if (!userID) {
+      return res.status(400).json({
+        success: false,
+        message: "userID is required",
+      });
+    }
+
+    const releaseID = uploadedFile.originalname.split('--')[0]
+    if (!releaseID) {
+      return res.status(400).json({
+        success: false,
+        message: "releaseID is required in file name",
+      });
+    }
+
+    const uploadUserDir = `${uploadDir}/${userID}`;
+    fs.ensureDirSync(uploadUserDir);
+
+    const discogsResult = await metadataService.getDiscogsByReleaseID({
+      releaseID,
+      user: userID
+    });
+
+    if (
+      !discogsResult.success ||
+      !discogsResult.data ||
+      !discogsResult.data.release ||
+      !discogsResult.data.release.discogs_release
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Discogs release was not found",
+        discogs: discogsResult,
+      });
+    }
+
+    const release = discogsResult.data.release;
+    const title = uploadData.title || buildReleaseTitle(release);
+    const description = uploadData.description || buildReleaseDescription(release);
+    const audioCountryYear = buildCountryYear(release);
+    const uploadService = new UploadService()
+
+    fs.moveSync(uploadedFile.path, `${uploadUserDir}/audio.mp3`, { overwrite: true });
+
+    if (!fs.existsSync(`${uploadUserDir}/cover.jpg`)) {
+      return res.status(400).json({
+        success: false,
+        message: "Discogs cover was not downloaded",
+        discogs: discogsResult,
+      });
+    }
+
+    req.io.sockets.emit("fileUploaded", {
+      success: true,
+      userId: userID
+    });
+
+    await uploadService.setUploadData({
+      ...uploadData,
+      userID,
+      title,
+      description,
+      privacyStatus: uploadData.privacyStatus || 'unlisted',
+      uploadTemplate: uploadData.uploadTemplate || '2',
+      audioTitle: release.album,
+      audioArtist: release.artist,
+      audioCountryYear,
+    }, uploadUserDir)
+
+    await uploadService.uploadFilesAuto({ title })
+
+    req.io.sockets.emit("videoFileReady", {
+      success: true,
+      userId: userID
+    });
+
+    const pushVideo = await uploadService.pushToYoutube(releaseID)
+    if (pushVideo.success) {
+      await uploadService.saveVideoToDB()
+      await uploadService.saveVideoToUser()
+    }
+
+    // req.io.sockets.emit("pushToYoutube", {
+    //   success: pushVideo.success,
+    //   message: pushVideo.message,
+    //   url: pushVideo.url,
+    //   userId: userID
+    // });
+
+    return res.json({
+      success: pushVideo.success,
+      message: pushVideo.message,
+      url: pushVideo.url,
+      releaseID,
+      discogs: discogsResult.data,
+    });
+  } catch (error) {
+    console.log('uploadFileRVBD error ', error)
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 
 };
 
@@ -206,6 +314,41 @@ const getAllVideos = async (req, res, next) => {
     console.log(e)
     res.status(400).json({ message: "Access Error" });
   }
+}
+
+function buildReleaseTitle(release) {
+  const artist = release.artist || '';
+  const album = release.album || '';
+  const countryYear = buildCountryYear(release);
+  const baseTitle = [artist, album].filter(Boolean).join(' - ');
+  if (!baseTitle) {
+    return countryYear;
+  }
+  return countryYear ? `${baseTitle} ${countryYear}` : baseTitle;
+}
+
+function buildCountryYear(release) {
+  if (release.country && release.year) {
+    return `(${release.country}, ${release.year})`;
+  }
+  if (release.country) {
+    return `(${release.country})`;
+  }
+  if (release.year) {
+    return `(${release.year})`;
+  }
+  return '';
+}
+
+function buildReleaseDescription(release) {
+  const lines = [];
+  if (release.album) {
+    lines.push(`Album: ${release.album}`);
+  }
+  if (release.link) {
+    lines.push(`Discogs: ${release.link}`);
+  }
+  return lines.join('\n');
 }
 
 

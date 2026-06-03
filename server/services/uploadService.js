@@ -291,7 +291,7 @@ class UploadService {
                         url: data.data.id
                     }
                     
-                    resolve(true);
+                    resolve(this.pushVideo);
                 }
       
                 if (err) {
@@ -301,12 +301,18 @@ class UploadService {
                         message: err,
                         url: null,
                     }
-                    resolve(false);
+                    resolve(this.pushVideo);
                 }
               }
             );
           } catch (error) {
             console.log(error);
+            this.pushVideo = {
+              success: false,
+              message: error,
+              url: null,
+            }
+            resolve(this.pushVideo);
           }
         });
     }
@@ -532,6 +538,5 @@ async function convertToJPG(startImage, finalImage) {
   }
 }
 
-module.exports = new UploadService();
-
+module.exports = UploadService;
 

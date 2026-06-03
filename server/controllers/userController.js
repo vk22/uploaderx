@@ -1,5 +1,5 @@
 const userService = require('../services/userService');
-const uploadService = require("../services/uploadService");
+const UploadService = require("../services/uploadService");
 
 class UserController {
 
@@ -68,6 +68,7 @@ class UserController {
       const playlistID = req.query.playlistID;
       const userID = req.query.userID;
       const separator = req.query.separator
+      const uploadService = new UploadService()
       const data = await uploadService.getVideosFromPlaylist(userID, playlistID, separator);
       return res.json(data);
 
@@ -82,6 +83,7 @@ class UserController {
       console.log('req.query ', req.query)
       const playlistID = req.query.playlistID;
       const userID = req.query.userID;
+      const uploadService = new UploadService()
       const data = await uploadService.getVideosFromChannel(userID, playlistID);
       return res.json(data);
 
