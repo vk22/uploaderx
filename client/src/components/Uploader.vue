@@ -559,13 +559,13 @@ function generateFileFromURL(url, filename, mimeType) {
       return new File([buf], filename, { type: mimeType });
     });
 }
-async function getDiscogs(data, сoverNeed) {
+async function getDiscogs(data, coverNeed) {
   const userID = user.value ? user.value.id : "test";
   console.log('data ', data)
   return await axios.post("/api/getdiscogs", {
     trackData: data,
     user: userID,
-    сoverNeed: сoverNeed,
+    coverNeed: coverNeed,
   });
 }
 async function getDiscogsByReleaseID() {

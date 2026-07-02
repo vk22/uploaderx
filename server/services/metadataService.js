@@ -11,7 +11,9 @@ var db = new Discogs({
 const wantlist = new Discogs({
   userToken: "jLTzotZkrkcXdTbeogLPhQdmUCnbicJBqVKaYSWC"
 }).user().wantlist();
-const uploadDir = process.env.ROOT_DIR + "/uploads";
+const rootDir = process.env.ROOT_DIR || path.join(__dirname, "../..");
+const uploadDir = path.join(rootDir, "uploads");
+const defaultCoverPath = path.join(rootDir, "client/public/cover.jpg");
 const API_URL_TOOLS = 'https://tools.revibed.com/api'
 
 
@@ -71,6 +73,8 @@ class MetadataService {
     // console.log('trackData ', trackData)
     let mainResult;
     let searchResult;
+    let cover = undefined;
+    let errors = [];
     //coverNeed = true;
 
     /// searchResult запрос 
@@ -99,21 +103,9 @@ class MetadataService {
           getRelease = await db.getRelease(searchResult.id);
         }
         const artist_data = await getArtistData(getRelease.artists);
-        if (coverNeed && getRelease.images) {
-          if (getRelease.images.length) {
-            if (getRelease.images[0].uri) {
-              const imageBinary = await db.getImage(getRelease.images[0].uri)
-              const imageFromDiscogs = await downloadImage(imageBinary, `${uploadDir}/${user}/cover.jpg`)
-              if (imageFromDiscogs.success) {
-                cover = `/uploads/${user}/cover.jpg`
-              } else {
-                errors.push({
-                  type: 'downloadImage error',
-                  message: imageFromDiscogs.message
-                })
-              }
-            }
-          }
+        const coverUri = getReleaseCoverUri(getRelease);
+        if (coverNeed) {
+          cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
         }
         const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
         mainResult = {
@@ -131,9 +123,10 @@ class MetadataService {
               genres: getRelease.genres,
               styles: getRelease.styles,
               discogs_release: getRelease.id,
-              coverUri: getRelease.images[0].uri
+              coverUri: coverUri
             },
-            cover: cover
+            cover: cover,
+            errors: errors
           }
         };
         return mainResult;
@@ -142,23 +135,11 @@ class MetadataService {
 
         const getMaster = await db.getMaster(searchResult.id);
         const getRelease = await db.getRelease(getMaster.main_release);
-        const artist_data = getArtistData(getRelease.artists);
+        const artist_data = await getArtistData(getRelease.artists);
 
-        if (coverNeed && getRelease.images) {
-          if (getRelease.images.length) {
-            if (getRelease.images[0].uri) {
-              const imageBinary = await db.getImage(getRelease.images[0].uri)
-              const imageFromDiscogs = await downloadImage(imageBinary, `${uploadDir}/${user}/cover.jpg`)
-              if (imageFromDiscogs.success) {
-                cover = `/uploads/${user}/cover.jpg`
-              } else {
-                errors.push({
-                  type: 'downloadImage error',
-                  message: imageFromDiscogs.message
-                })
-              }
-            }
-          }
+        const coverUri = getReleaseCoverUri(getRelease);
+        if (coverNeed) {
+          cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
         }
         mainResult = {
           success: true,
@@ -175,9 +156,10 @@ class MetadataService {
               artist_data: artist_data,
               album: getRelease.title,
               discogs_release: getRelease.id,
-              coverUri: getRelease.images[0].uri
+              coverUri: coverUri
             },
             cover: cover,
+            errors: errors,
 
           }
         };
@@ -235,6 +217,7 @@ class MetadataService {
         }
         const artist_data = await getArtistData(getRelease.artists);
         const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
+        const coverUri = getReleaseCoverUri(getRelease);
         mainResult = {
           id: getRelease.id,
           link: getRelease.uri,
@@ -246,7 +229,7 @@ class MetadataService {
           country: getRelease.country,
           genres: getRelease.genres,
           styles: getRelease.styles,
-          coverUri: getRelease.images[0].uri
+          coverUri: coverUri
         };
 
         return {
@@ -258,7 +241,8 @@ class MetadataService {
 
         const getMaster = await db.getMaster(searchResult.id);
         const getRelease = await db.getRelease(getMaster.main_release);
-        const artist_data = getArtistData(getRelease.artists);
+        const artist_data = await getArtistData(getRelease.artists);
+        const coverUri = getReleaseCoverUri(getRelease);
 
         mainResult = {
           id: getRelease.id,
@@ -271,7 +255,7 @@ class MetadataService {
           artist: artistNameHandler(getRelease.artists_sort),
           artist_data: artist_data,
           album: getRelease.title,
-          coverUri: getRelease.images[0].uri
+          coverUri: coverUri
         }
 
         return {
@@ -304,6 +288,7 @@ class MetadataService {
     try {
       const getRelease = await db.getRelease(releaseID);
       console.log('getRelease ', getRelease.title)
+      const coverUri = getReleaseCoverUri(getRelease);
       release = {
         link: getRelease.uri,
         label: getRelease.labels,
@@ -314,7 +299,7 @@ class MetadataService {
         artist: artistNameHandler(getRelease.artists_sort),
         album: getRelease.title,
         discogs_release: getRelease.id,
-        coverUri: getRelease.images[0].uri
+        coverUri: coverUri
       }
     } catch (error) {
       console.log('getRelease error ', error.message)
@@ -324,18 +309,7 @@ class MetadataService {
       })
     }
 
-    if (release.coverUri) {
-      const imageBinary = await db.getImage(release.coverUri)
-      const imageFromDiscogs = await downloadImage(imageBinary, `${uploadDir}/${user}/cover.jpg`)
-      if (imageFromDiscogs.success) {
-        cover = `/uploads/${user}/cover.jpg`
-      } else {
-        errors.push({
-          type: 'downloadImage error',
-          message: imageFromDiscogs.message
-        })
-      }
-    }
+    cover = await saveCoverFromDiscogsOrDefault(release.coverUri, user, errors);
 
     const result = {
       success: true,
@@ -418,7 +392,10 @@ function prepareQuery(trackData) {
 function downloadImage(data, path) {
   return new Promise((resolve, reject) => {
     fs.writeFile(path, data, 'binary', (err) => {
-      if (err) throw err;
+      if (err) {
+        reject(err);
+        return;
+      }
       console.log('Image downloaded successfully!');
       resolve({
         success: true,
@@ -426,6 +403,62 @@ function downloadImage(data, path) {
       })
     });
   })
+}
+
+function getReleaseCoverUri(release) {
+  if (!release || !Array.isArray(release.images) || !release.images.length) {
+    return undefined;
+  }
+  return release.images[0] && release.images[0].uri ? release.images[0].uri : undefined;
+}
+
+async function saveCoverFromDiscogsOrDefault(coverUri, user, errors) {
+  if (coverUri) {
+    try {
+      const imageBinary = await db.getImage(coverUri);
+      const imageFromDiscogs = await downloadImage(imageBinary, getUserCoverPath(user));
+      if (imageFromDiscogs.success) {
+        return `/uploads/${user}/cover.jpg`;
+      }
+      errors.push({
+        type: 'downloadImage error',
+        message: imageFromDiscogs.message
+      });
+    } catch (error) {
+      errors.push({
+        type: 'downloadImage error',
+        message: error.message
+      });
+    }
+  } else {
+    errors.push({
+      type: 'discogs cover missing',
+      message: 'Discogs release has no cover image'
+    });
+  }
+
+  return copyDefaultCover(user, errors);
+}
+
+function copyDefaultCover(user, errors) {
+  try {
+    const userUploadDir = `${uploadDir}/${user}`;
+    fs.mkdirSync(userUploadDir, { recursive: true });
+    fs.copyFileSync(defaultCoverPath, getUserCoverPath(user));
+    return `/uploads/${user}/cover.jpg`;
+  } catch (error) {
+    errors.push({
+      type: 'default cover error',
+      message: error.message
+    });
+    return undefined;
+  }
+}
+
+function getUserCoverPath(user) {
+  const userUploadDir = `${uploadDir}/${user}`;
+  fs.mkdirSync(userUploadDir, { recursive: true });
+  return `${userUploadDir}/cover.jpg`;
 }
 
 async function getArtistData(artists) {
