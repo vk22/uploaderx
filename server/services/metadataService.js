@@ -1,34 +1,20 @@
 const fs = require("fs");
-const { join, extname, basename } = require("path");
 const path = require("path");
-const axios = require("axios");
 const mm = require('music-metadata');
 const { sanitizeUserId } = require('../utils/sanitizeUserId');
-var Discogs = require("disconnect").Client;
-var db = new Discogs({
-  consumerKey: process.env.DISCOGS_CONSUMER_KEY,
-  consumerSecret: process.env.DISCOGS_CONSUMER_SECRET,
-}).database();
-const wantlist = new Discogs({
-  userToken: process.env.DISCOGS_USER_TOKEN
-}).user().wantlist();
+const discogsClient = require('../clients/discogsClient');
+const revibedClient = require('../clients/revibedClient');
+
 const rootDir = process.env.ROOT_DIR || path.join(__dirname, "../..");
 const uploadDir = path.join(rootDir, "uploads");
 const defaultCoverPath = path.join(rootDir, "cover.jpg");
-const API_URL_TOOLS = 'https://tools.revibed.com/api'
-
 
 class MetadataService {
 
-  constructor() {
-  }
-
   async readID3Tags(filepath) {
     let metadata, finalData, title
-    console.log('readID3Tags ', filepath)
     try {
       const parseFileData = await mm.parseFile(filepath);
-      //   console.log('metadata.common ', parseFileData.common)
       if (parseFileData) {
         metadata = {
           picture: (parseFileData.common.picture) ? parseFileData.common.picture[0] : undefined,
@@ -38,7 +24,6 @@ class MetadataService {
           year: parseFileData.common.year
         }
         const discogsData = await this.getDiscogs(metadata);
-        // console.log('discogsData ', discogsData)
         metadata.country = discogsData.country
 
         if (metadata.year && metadata.country) {
@@ -66,23 +51,17 @@ class MetadataService {
     return finalData
   }
 
-  /// Get Discogs  
+  /// Get Discogs
   async getDiscogs(data) {
-    // console.log('getDiscogs ', data)
     const { trackData, user, coverNeed } = data
 
-    // console.log('trackData ', trackData)
     let mainResult;
     let searchResult;
     let cover = undefined;
     let errors = [];
-    //coverNeed = true;
 
-    /// searchResult запрос 
     const query1 = prepareQuery(trackData)
-    // console.log('query1 ', query1)
-    const { results } = await db.search(query1);
-    // console.log('results ', results)
+    const { results } = await discogsClient.search(query1);
 
     if (!results.length) {
       return {
@@ -93,109 +72,93 @@ class MetadataService {
       searchResult = results[0];
     }
 
-    if (searchResult !== undefined) {
-      if (searchResult.type === "release") {
-        let getMaster, getRelease;
-        /// If Release Has Master
-        if (searchResult.master_id) {
-          getMaster = await db.getMaster(searchResult.master_id);
-          getRelease = await db.getRelease(getMaster.main_release);
-        } else {
-          getRelease = await db.getRelease(searchResult.id);
-        }
-        const artist_data = await getArtistData(getRelease.artists);
-        const coverUri = getReleaseCoverUri(getRelease);
-        if (coverNeed) {
-          cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
-        }
-        const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
-        mainResult = {
-          success: true,
-          data: {
-            message: "File parsed by Discogs",
-            release: {
-              link: getRelease.uri,
-              album: getRelease.title,
-              artist: artistNameHandler(artist),
-              artist_data: artist_data,
-              // label: getRelease.label,
-              year: getRelease.year,
-              country: getRelease.country,
-              genres: getRelease.genres,
-              styles: getRelease.styles,
-              discogs_release: getRelease.id,
-              coverUri: coverUri
-            },
-            cover: cover,
-            errors: errors
-          }
-        };
-        return mainResult;
-
-      } else if (searchResult.type === "master") {
-
-        const getMaster = await db.getMaster(searchResult.id);
-        const getRelease = await db.getRelease(getMaster.main_release);
-        const artist_data = await getArtistData(getRelease.artists);
-
-        const coverUri = getReleaseCoverUri(getRelease);
-        if (coverNeed) {
-          cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
-        }
-        mainResult = {
-          success: true,
-          data: {
-            message: "File parsed by Discogs",
-            release: {
-              link: getRelease.uri,
-              label: getRelease.labels,
-              year: getRelease.year,
-              genres: getRelease.genres,
-              styles: getRelease.styles,
-              country: getRelease.country,
-              artist: artistNameHandler(getRelease.artists_sort),
-              artist_data: artist_data,
-              album: getRelease.title,
-              discogs_release: getRelease.id,
-              coverUri: coverUri
-            },
-            cover: cover,
-            errors: errors,
-
-          }
-        };
-
-        return mainResult;
-
+    if (searchResult.type === "release") {
+      let getMaster, getRelease;
+      /// If Release Has Master
+      if (searchResult.master_id) {
+        getMaster = await discogsClient.getMaster(searchResult.master_id);
+        getRelease = await discogsClient.getRelease(getMaster.main_release);
       } else {
-        return {
-          success: false,
-          message: "Error with discogs parsing",
-        };
+        getRelease = await discogsClient.getRelease(searchResult.id);
       }
+      const artist_data = await discogsClient.getArtistsData(getRelease.artists);
+      const coverUri = getReleaseCoverUri(getRelease);
+      if (coverNeed) {
+        cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
+      }
+      const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
+      mainResult = {
+        success: true,
+        data: {
+          message: "File parsed by Discogs",
+          release: {
+            link: getRelease.uri,
+            album: getRelease.title,
+            artist: artistNameHandler(artist),
+            artist_data: artist_data,
+            year: getRelease.year,
+            country: getRelease.country,
+            genres: getRelease.genres,
+            styles: getRelease.styles,
+            discogs_release: getRelease.id,
+            coverUri: coverUri
+          },
+          cover: cover,
+          errors: errors
+        }
+      };
+      return mainResult;
+
+    } else if (searchResult.type === "master") {
+
+      const getMaster = await discogsClient.getMaster(searchResult.id);
+      const getRelease = await discogsClient.getRelease(getMaster.main_release);
+      const artist_data = await discogsClient.getArtistsData(getRelease.artists);
+
+      const coverUri = getReleaseCoverUri(getRelease);
+      if (coverNeed) {
+        cover = await saveCoverFromDiscogsOrDefault(coverUri, user, errors);
+      }
+      mainResult = {
+        success: true,
+        data: {
+          message: "File parsed by Discogs",
+          release: {
+            link: getRelease.uri,
+            label: getRelease.labels,
+            year: getRelease.year,
+            genres: getRelease.genres,
+            styles: getRelease.styles,
+            country: getRelease.country,
+            artist: artistNameHandler(getRelease.artists_sort),
+            artist_data: artist_data,
+            album: getRelease.title,
+            discogs_release: getRelease.id,
+            coverUri: coverUri
+          },
+          cover: cover,
+          errors: errors,
+        }
+      };
+
+      return mainResult;
+
     } else {
       return {
         success: false,
         message: "Error with discogs parsing",
       };
     }
-
   };
 
   async getDiscogsReleaseOnly(data) {
-    console.log('getDiscogs ', data)
     const { trackData } = data
 
-    console.log('trackData ', trackData)
     let mainResult;
     let searchResult;
-    //coverNeed = true;
 
-    /// searchResult запрос 
     const query1 = prepareQuery(trackData)
-    console.log('query1 ', query1)
-    const { results } = await db.search(query1);
-    // console.log('results ', results)
+    const { results } = await discogsClient.search(query1);
 
     if (!results.length) {
       return {
@@ -206,89 +169,78 @@ class MetadataService {
       searchResult = results[0];
     }
 
-    if (searchResult !== undefined) {
-      if (searchResult.type === "release") {
-        let getMaster, getRelease;
-        /// If Release Has Master
-        if (searchResult.master_id) {
-          getMaster = await db.getMaster(searchResult.master_id);
-          getRelease = await db.getRelease(getMaster.main_release);
-        } else {
-          getRelease = await db.getRelease(searchResult.id);
-        }
-        const artist_data = await getArtistData(getRelease.artists);
-        const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
-        const coverUri = getReleaseCoverUri(getRelease);
-        mainResult = {
-          id: getRelease.id,
-          link: getRelease.uri,
-          album: getRelease.title,
-          artist: artistNameHandler(artist),
-          artist_data: artist_data,
-          // label: getRelease.label,
-          year: getRelease.year,
-          country: getRelease.country,
-          genres: getRelease.genres,
-          styles: getRelease.styles,
-          coverUri: coverUri
-        };
-
-        return {
-          success: true,
-          data: mainResult
-        };
-
-      } else if (searchResult.type === "master") {
-
-        const getMaster = await db.getMaster(searchResult.id);
-        const getRelease = await db.getRelease(getMaster.main_release);
-        const artist_data = await getArtistData(getRelease.artists);
-        const coverUri = getReleaseCoverUri(getRelease);
-
-        mainResult = {
-          id: getRelease.id,
-          link: getRelease.uri,
-          label: getRelease.labels,
-          year: getRelease.year,
-          genres: getRelease.genres,
-          styles: getRelease.styles,
-          country: getRelease.country,
-          artist: artistNameHandler(getRelease.artists_sort),
-          artist_data: artist_data,
-          album: getRelease.title,
-          coverUri: coverUri
-        }
-
-        return {
-          success: true,
-          data: mainResult
-        };
-
+    if (searchResult.type === "release") {
+      let getMaster, getRelease;
+      /// If Release Has Master
+      if (searchResult.master_id) {
+        getMaster = await discogsClient.getMaster(searchResult.master_id);
+        getRelease = await discogsClient.getRelease(getMaster.main_release);
       } else {
-        return {
-          success: false,
-          message: "Error with discogs parsing",
-        };
+        getRelease = await discogsClient.getRelease(searchResult.id);
       }
+      const artist_data = await discogsClient.getArtistsData(getRelease.artists);
+      const artist = (artist_data.length) ? artist_data[0].name : getRelease.artists_sort
+      const coverUri = getReleaseCoverUri(getRelease);
+      mainResult = {
+        id: getRelease.id,
+        link: getRelease.uri,
+        album: getRelease.title,
+        artist: artistNameHandler(artist),
+        artist_data: artist_data,
+        year: getRelease.year,
+        country: getRelease.country,
+        genres: getRelease.genres,
+        styles: getRelease.styles,
+        coverUri: coverUri
+      };
+
+      return {
+        success: true,
+        data: mainResult
+      };
+
+    } else if (searchResult.type === "master") {
+
+      const getMaster = await discogsClient.getMaster(searchResult.id);
+      const getRelease = await discogsClient.getRelease(getMaster.main_release);
+      const artist_data = await discogsClient.getArtistsData(getRelease.artists);
+      const coverUri = getReleaseCoverUri(getRelease);
+
+      mainResult = {
+        id: getRelease.id,
+        link: getRelease.uri,
+        label: getRelease.labels,
+        year: getRelease.year,
+        genres: getRelease.genres,
+        styles: getRelease.styles,
+        country: getRelease.country,
+        artist: artistNameHandler(getRelease.artists_sort),
+        artist_data: artist_data,
+        album: getRelease.title,
+        coverUri: coverUri
+      }
+
+      return {
+        success: true,
+        data: mainResult
+      };
+
     } else {
       return {
         success: false,
         message: "Error with discogs parsing",
       };
     }
-
   };
 
   async getDiscogsByReleaseID(data) {
-
     const { releaseID, user } = data;
     let errors = [];
     let release = {};
     let cover = undefined;
 
     try {
-      const getRelease = await db.getRelease(releaseID);
-      console.log('getRelease ', getRelease.title)
+      const getRelease = await discogsClient.getRelease(releaseID);
       const coverUri = getReleaseCoverUri(getRelease);
       release = {
         link: getRelease.uri,
@@ -312,7 +264,7 @@ class MetadataService {
 
     cover = await saveCoverFromDiscogsOrDefault(release.coverUri, user, errors);
 
-    const result = {
+    return {
       success: true,
       data: {
         release: release,
@@ -320,19 +272,10 @@ class MetadataService {
         errors: errors
       }
     };
-    return result;
   }
 
   async checkReleaseInRevibedTools(releaseID) {
-    const { data } = await axios.post(
-      `${API_URL_TOOLS}/check-release`,
-      { releaseID: releaseID },
-      {
-        headers: {
-          'x-api-key': process.env.RTOOLS_API_KEY
-        }
-      }
-    )
+    const data = await revibedClient.checkRelease(releaseID);
     const result = data.result;
     const labelsWarningsArr = Object.values(data.data);
     const labelsWarnings = labelsWarningsArr.some(
@@ -343,10 +286,10 @@ class MetadataService {
       labelsWarnings
     }
   }
+
   async getWanlist(username) {
     try {
-      const data = await wantlist.getReleases(username);
-      return data;
+      return await discogsClient.getWantlist(username);
     } catch (err) {
       console.log("error getWanlist", err);
       return false
@@ -355,9 +298,7 @@ class MetadataService {
 
   async addWanlist(username, releaseID) {
     try {
-      console.log('releaseID: ', releaseID)
-      const data = await wantlist.addRelease(username, releaseID);
-      return data;
+      return await discogsClient.addToWantlist(username, releaseID);
     } catch (err) {
       console.log("error addWanlist", err);
       return false
@@ -366,9 +307,7 @@ class MetadataService {
 
   async removeWanlist(username, releaseID) {
     try {
-      console.log('releaseID ', releaseID)
-      const data = await wantlist.removeRelease(username, releaseID);
-      return data;
+      return await discogsClient.removeFromWantlist(username, releaseID);
     } catch (err) {
       console.log("error removeWanlist", err);
       return false
@@ -386,18 +325,16 @@ function prepareQuery(trackData) {
   for (let key in trackData) {
     arr = arr.concat(trackData[key])
   }
-  const queryAsString = arr.join('+');
-  return queryAsString;
+  return arr.join('+');
 }
 
-function downloadImage(data, path) {
+function downloadImage(data, filePath) {
   return new Promise((resolve, reject) => {
-    fs.writeFile(path, data, 'binary', (err) => {
+    fs.writeFile(filePath, data, 'binary', (err) => {
       if (err) {
         reject(err);
         return;
       }
-      console.log('Image downloaded successfully!');
       resolve({
         success: true,
         message: 'Image downloaded successfully!'
@@ -416,7 +353,7 @@ function getReleaseCoverUri(release) {
 async function saveCoverFromDiscogsOrDefault(coverUri, user, errors) {
   if (coverUri) {
     try {
-      const imageBinary = await db.getImage(coverUri);
+      const imageBinary = await discogsClient.getImage(coverUri);
       const imageFromDiscogs = await downloadImage(imageBinary, getUserCoverPath(user));
       if (imageFromDiscogs.success) {
         return `/uploads/${user}/cover.jpg`;
@@ -462,26 +399,6 @@ function getUserCoverPath(user) {
   return `${userUploadDir}/cover.jpg`;
 }
 
-async function getArtistData(artists) {
-  const artist_data = []
-  for (const artist of artists) {
-    try {
-      const getArtist = await db.getArtist(artist.id);
-      if (getArtist.members) {
-        getArtist.members.map((member) => artist_data.push(member));
-      } else {
-        artist_data.push({
-          name: getArtist.name,
-          id: getArtist.id,
-        });
-      }
-    } catch (err) {
-      //console.log("getArtist err ", err);
-    }
-  }
-  return artist_data
-}
-
 function artistNameHandler(str) {
   function isNumber(n) {
     return Number(n) === n;
@@ -495,7 +412,5 @@ function artistNameHandler(str) {
   }
   return result;
 }
-
-
 
 module.exports = new MetadataService();
