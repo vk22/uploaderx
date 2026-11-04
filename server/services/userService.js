@@ -3,6 +3,7 @@ const config = require("../config/config");
 const rootDir = process.env.ROOT_DIR;
 const uploadDir =  rootDir + "/uploads";
 const User = require("../models/user-model");
+const { sanitizeUserId } = require("../utils/sanitizeUserId");
 var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
 
@@ -195,8 +196,9 @@ class UserService {
 
     async createUserFolder(userID) {
         try {
-            if (!fs.existsSync(`${uploadDir}/${userID}`)) {
-                fs.mkdirSync(`${uploadDir}/${userID}`);
+            const safeUserID = sanitizeUserId(userID);
+            if (!fs.existsSync(`${uploadDir}/${safeUserID}`)) {
+                fs.mkdirSync(`${uploadDir}/${safeUserID}`);
             }
             return true;
         } catch (error) {

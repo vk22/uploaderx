@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+const execFile = util.promisify(require("child_process").execFile);
 const { google } = require("googleapis");
 const service = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
@@ -20,37 +20,6 @@ const metadataService = require("../services/metadataService");
 const config = require("../config/config");
 const sharp = require('sharp');
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-
-// function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
-//   console.log('ffmpegSync ', coverFile, uploadedFileOriginal, orderFolder)
-//     // ffmpeg -loop 1 -framerate 1 -i cover.jpg -i audio.aif -c copy -shortest output.mkv
-//     return new Promise((resolve, reject) => {
-//       ffmpeg()
-//         .input(coverFile)
-//         .loop()
-//         .addInputOption("-framerate 1")
-//         .input(uploadedFileOriginal)
-//         .audioCodec("copy")
-//         .outputOptions(["-shortest"])
-//         .output(orderFolder + "/output.mkv")
-//         .on("start", function (commandLine) {
-//           console.log("Converting to .mkv");
-//           console.log(commandLine);
-//         })
-//         .on("progress", function (progress) {
-//           console.log(+progress.percent);
-//           // console.log(+Math.round(progress.percent));
-//         })
-//         .on("error", function (err) {
-//           console.log("An error occurred: " + err.message);
-//         })
-//         .on("end", function (data) {
-//           console.log("Convert to .mkv: Processing finished !" + data);
-//           resolve(orderFolder + "/output.mkv");
-//         })
-//         .run();
-//     });
-//   }
 
 function ffmpegSync(coverFile, uploadedFileOriginal, orderFolder) {
   return new Promise((resolve, reject) => {
@@ -135,7 +104,7 @@ class UploadService {
         this.releaseCoverIsUploaded = uploadData.releaseCoverIsUploaded
         this.audioTitle = (uploadData.audioTitle) ? uploadData.audioTitle.replace(/["']/g, "") : ''
         this.audioArtist = (uploadData.audioArtist) ? uploadData.audioArtist.replace(/["']/g, "") : ''
-        this.audioCountryYear = uploadData.audioCountryYear
+        this.audioCountryYear = (uploadData.audioCountryYear) ? uploadData.audioCountryYear.replace(/["']/g, "") : ''
     }
     async createVideoFile (uploadedFiles) {
         // console.log('uploadedFiles ', uploadedFiles)    
@@ -180,23 +149,38 @@ class UploadService {
       console.log('generateVideoCover ', coverType)
         try {
           if (coverType === "KX") {
-            // console.log('kxTitle ', kxTitle)
-            const im1 = `magick ${file} -resize 1920x1080 -gravity East -background '#1a1a1a' -extent 1920x1080 ${file}`;
-            const im2 = `magick composite -gravity West -geometry +50+150 ${kxTitle} ${file} -colorspace rgb -type truecolor ${file}`;
-            await exec(im1);
-            await exec(im2);
+            await execFile("convert", [
+              file, "-resize", "1920x1080", "-gravity", "East",
+              "-background", "#1a1a1a", "-extent", "1920x1080", file,
+            ]);
+            await execFile("composite", [
+              "-gravity", "West", "-geometry", "+50+150",
+              kxTitle, file, "-colorspace", "rgb", "-type", "truecolor", file,
+            ]);
           } else if (coverType === "1") {
-            // const im1 = `magick -size 1920x1080 xc:none -colorspace rgb -type truecolor ${backgroundBlack}`;
-            const im1 = `magick ${file} -resize 920x920 ${backgroundBlack} +swap -gravity West -geometry +100+0 -compose over -composite ${file}`;
-            const im2 = `magick composite -gravity SouthEast -geometry +80+80 ${uploaderLogo} ${file} ${file}`;
-            const im3 = `magick ${file} -font ${fontBold} -pointsize 32 -fill white -gravity NorthEast -draw "text 80,80 '${this.audioArtist}'" -font ${fontLight} -draw "text 80,130 '${this.audioTitle}'" -draw "text 80,180 '${this.audioCountryYear}'" ${file}`
-            // await exec(im1);
-            await exec(im1);
-            await exec(im2);
-            await exec(im3);
+            await execFile("convert", [
+              file, "-resize", "920x920", backgroundBlack, "+swap",
+              "-gravity", "West", "-geometry", "+100+0", "-compose", "over",
+              "-composite", file,
+            ]);
+            await execFile("composite", [
+              "-gravity", "SouthEast", "-geometry", "+80+80",
+              uploaderLogo, file, file,
+            ]);
+            await execFile("convert", [
+              file, "-font", fontBold, "-pointsize", "32", "-fill", "white",
+              "-gravity", "NorthEast",
+              "-draw", `text 80,80 '${this.audioArtist}'`,
+              "-font", fontLight,
+              "-draw", `text 80,130 '${this.audioTitle}'`,
+              "-draw", `text 80,180 '${this.audioCountryYear}'`,
+              file,
+            ]);
           } else if (coverType === "2") {
-            const im1 = `magick ${file} -resize 1920x1080 -gravity center -background '#000000' -extent 1920x1080 ${file}`;
-            await exec(im1);
+            await execFile("convert", [
+              file, "-resize", "1920x1080", "-gravity", "center",
+              "-background", "#000000", "-extent", "1920x1080", file,
+            ]);
           }
         } catch (err) {
           console.log('err ', err)

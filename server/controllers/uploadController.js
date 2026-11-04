@@ -1,20 +1,8 @@
 const fs = require('fs-extra')
-const { google } = require("googleapis");
-const service = google.youtube("v3");
-const OAuth2 = google.auth.OAuth2;
+const { sanitizeUserId } = require('../utils/sanitizeUserId')
 const rootDir = process.env.ROOT_DIR;
 const uploadDir =  rootDir + "/uploads";
 const autoUploadDir =  rootDir + "/uploads/auto";
-const scopes = ["https://www.googleapis.com/auth/youtube"];
-var Discogs = require("disconnect").Client;
-var db = new Discogs({
-  consumerKey: "ZLPAhBKDWpYhlrbQWUUH",
-  consumerSecret: "eXaccGPIbxGhODNMucbRYMEvSKzeJRhM",
-}).database();
-const util = require("util");
-const exec = util.promisify(require("child_process").exec);
-const kxTitle = uploadDir + "/kx-title.png";
-// const UploadItem = require('./uploadItem.js');
 const UploadService = require("../services/uploadService");
 const metadataService = require("../services/metadataService");
 const Video = require("../models/video-model");
@@ -24,9 +12,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 const startAutoUpload = async (req, res) => {
   console.log('startAutoUpload ', req.body)
   const uploadData = req.body.data
-  const userID = uploadData.userID
+  let userID
+  try {
+    userID = sanitizeUserId(uploadData.userID)
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message })
+  }
   const files = fs.readdirSync(`${autoUploadDir}/audio`)
-  const uploadUserDir = `${uploadDir}/${userID}`; 
+  const uploadUserDir = `${uploadDir}/${userID}`;
   const uploadService = new UploadService()
   // const newUpload = new UploadItem(uploadData, uploadUserDir)
   await uploadService.setUploadData(uploadData, uploadUserDir)
@@ -88,8 +81,14 @@ const uploadFiles = async (req, res) => {
   /// request handler 
   console.log('uploadFiles ', req.body)
   const uploadData = req.body;
-  const userID = req.body.userID;
   const releaseID = req.body.releaseID;
+
+  let userID
+  try {
+    userID = sanitizeUserId(req.body.userID)
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message })
+  }
 
   const uploadUserDir = `${uploadDir}/${userID}`;
   const uploadedFiles = req.files
@@ -171,11 +170,13 @@ const uploadFileRVBD = async (req, res) => {
     }
 
     const uploadData = req.body;
-    const userID = req.body.userID || req.body.user;
-    if (!userID) {
+    let userID
+    try {
+      userID = sanitizeUserId(req.body.userID || req.body.user);
+    } catch (error) {
       return res.status(400).json({
         success: false,
-        message: "userID is required",
+        message: error.message,
       });
     }
 

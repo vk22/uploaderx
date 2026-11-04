@@ -3,13 +3,18 @@ const router = express.Router()
 const multer = require('multer')
 const uploadController = require('../controllers/uploadController')
 const metadataController = require("../controllers/metadataController");
+const { sanitizeUserId } = require('../utils/sanitizeUserId')
 const rootDir = process.env.ROOT_DIR;
 const uploadDir =  rootDir + "/uploads";
 const uploadDirRVBD =  rootDir + "/uploads/auto/audio";
 const storageFiles = multer.diskStorage({
   destination: function (req, file, cb) {
-    const userID = req.query.user
-    cb(null, uploadDir + '/' + userID)
+    try {
+      const userID = sanitizeUserId(req.query.user)
+      cb(null, uploadDir + '/' + userID)
+    } catch (error) {
+      cb(error)
+    }
   },
   filename: function (req, file, cb) {
     const extension = file.originalname.split('.').pop();

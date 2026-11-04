@@ -3,17 +3,18 @@ const { join, extname, basename } = require("path");
 const path = require("path");
 const axios = require("axios");
 const mm = require('music-metadata');
+const { sanitizeUserId } = require('../utils/sanitizeUserId');
 var Discogs = require("disconnect").Client;
 var db = new Discogs({
-  consumerKey: "ZLPAhBKDWpYhlrbQWUUH",
-  consumerSecret: "eXaccGPIbxGhODNMucbRYMEvSKzeJRhM",
+  consumerKey: process.env.DISCOGS_CONSUMER_KEY,
+  consumerSecret: process.env.DISCOGS_CONSUMER_SECRET,
 }).database();
 const wantlist = new Discogs({
-  userToken: "jLTzotZkrkcXdTbeogLPhQdmUCnbicJBqVKaYSWC"
+  userToken: process.env.DISCOGS_USER_TOKEN
 }).user().wantlist();
 const rootDir = process.env.ROOT_DIR || path.join(__dirname, "../..");
 const uploadDir = path.join(rootDir, "uploads");
-const defaultCoverPath = path.join(rootDir, "client/public/cover.jpg");
+const defaultCoverPath = path.join(rootDir, "cover.jpg");
 const API_URL_TOOLS = 'https://tools.revibed.com/api'
 
 
@@ -442,10 +443,9 @@ async function saveCoverFromDiscogsOrDefault(coverUri, user, errors) {
 
 function copyDefaultCover(user, errors) {
   try {
-    const userUploadDir = `${uploadDir}/${user}`;
-    fs.mkdirSync(userUploadDir, { recursive: true });
-    fs.copyFileSync(defaultCoverPath, getUserCoverPath(user));
-    return `/uploads/${user}/cover.jpg`;
+    const coverPath = getUserCoverPath(user);
+    fs.copyFileSync(defaultCoverPath, coverPath);
+    return `/uploads/${sanitizeUserId(user)}/cover.jpg`;
   } catch (error) {
     errors.push({
       type: 'default cover error',
@@ -456,7 +456,8 @@ function copyDefaultCover(user, errors) {
 }
 
 function getUserCoverPath(user) {
-  const userUploadDir = `${uploadDir}/${user}`;
+  const safeUser = sanitizeUserId(user);
+  const userUploadDir = `${uploadDir}/${safeUser}`;
   fs.mkdirSync(userUploadDir, { recursive: true });
   return `${userUploadDir}/cover.jpg`;
 }
