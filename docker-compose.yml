@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - uploaderx
+
+  server:
+    build:
+      context: ./server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE: mongodb://mongo:27017/ytbuploader
+      ROOT_DIR: /app/data
+      PORT: 8000
+    volumes:
+      - uploads_data:/app/data/uploads
+      - ./client/public/fonts:/app/data/fonts:ro
+      - ./client/public/sources:/app/data/sources:ro
+      - ./client/public/cover.jpg:/app/data/cover.jpg:ro
+    depends_on:
+      - mongo
+    networks:
+      - uploaderx
+
+  client:
+    build:
+      context: ./client
+    restart: unless-stopped
+    ports:
+      - "8091:80"
+    depends_on:
+      - server
+    networks:
+      - uploaderx
+
+networks:
+  uploaderx:
+
+volumes:
+  mongo_data:
+  uploads_data:
