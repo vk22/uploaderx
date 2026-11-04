@@ -1,4 +1,3 @@
-const fs = require("fs");
 const Video = require("../models/video-model");
 const User = require("../models/user-model");
 const userService = require("../services/userService");
@@ -8,6 +7,7 @@ const coverGenerator = require("../media/coverGenerator");
 const videoAssembler = require("../media/videoAssembler");
 const youtubeClient = require("../clients/youtubeClient");
 const revibedClient = require("../clients/revibedClient");
+const uploadStorage = require("../storage/uploadStorage");
 const { createUploadError, normalizeError } = require("../utils/errors");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -211,7 +211,7 @@ class UploadService {
       if (!this.videoMusic) {
         throw createUploadError("VIDEO_FILE_REQUIRED", "Video file is required", "validation_failed");
       }
-      if (!fs.existsSync(this.videoMusic)) {
+      if (!uploadStorage.fileExists(this.videoMusic)) {
         throw createUploadError("VIDEO_FILE_NOT_FOUND", `Video file not found: ${this.videoMusic}`, "validation_failed");
       }
       if (!this.title) {

@@ -3,16 +3,12 @@ const router = express.Router()
 const multer = require('multer')
 const uploadController = require('../controllers/uploadController')
 const metadataController = require("../controllers/metadataController");
-const { sanitizeUserId } = require('../utils/sanitizeUserId')
 const { requireBasicAuth } = require('../middleware/basicAuth')
-const rootDir = process.env.ROOT_DIR;
-const uploadDir =  rootDir + "/uploads";
-const uploadDirRVBD =  rootDir + "/uploads/auto/audio";
+const uploadStorage = require('../storage/uploadStorage')
 const storageFiles = multer.diskStorage({
   destination: function (req, file, cb) {
     try {
-      const userID = sanitizeUserId(req.query.user)
-      cb(null, uploadDir + '/' + userID)
+      cb(null, uploadStorage.getUserUploadDir(req.query.user))
     } catch (error) {
       cb(error)
     }
@@ -29,7 +25,7 @@ const uploadFiles = multer({ storage: storageFiles }).any()
 const storageRVBD = multer.diskStorage({
   destination: function (req, file, cb) {
     console.log('destination ', file)
-    cb(null, uploadDirRVBD)
+    cb(null, uploadStorage.getAutoAudioDir())
   },
   filename: function (req, file, cb) {
     console.log('filename ', file)

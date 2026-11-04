@@ -1,13 +1,7 @@
-const fs = require("fs");
-const path = require("path");
 const mm = require('music-metadata');
-const { sanitizeUserId } = require('../utils/sanitizeUserId');
 const discogsClient = require('../clients/discogsClient');
 const revibedClient = require('../clients/revibedClient');
-
-const rootDir = process.env.ROOT_DIR || path.join(__dirname, "../..");
-const uploadDir = path.join(rootDir, "uploads");
-const defaultCoverPath = path.join(rootDir, "cover.jpg");
+const uploadStorage = require('../storage/uploadStorage');
 
 class MetadataService {
 
@@ -328,21 +322,6 @@ function prepareQuery(trackData) {
   return arr.join('+');
 }
 
-function downloadImage(data, filePath) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePath, data, 'binary', (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve({
-        success: true,
-        message: 'Image downloaded successfully!'
-      })
-    });
-  })
-}
-
 function getReleaseCoverUri(release) {
   if (!release || !Array.isArray(release.images) || !release.images.length) {
     return undefined;
@@ -354,14 +333,8 @@ async function saveCoverFromDiscogsOrDefault(coverUri, user, errors) {
   if (coverUri) {
     try {
       const imageBinary = await discogsClient.getImage(coverUri);
-      const imageFromDiscogs = await downloadImage(imageBinary, getUserCoverPath(user));
-      if (imageFromDiscogs.success) {
-        return `/uploads/${user}/cover.jpg`;
-      }
-      errors.push({
-        type: 'downloadImage error',
-        message: imageFromDiscogs.message
-      });
+      await uploadStorage.writeBinaryFile(uploadStorage.getUserCoverPath(user), imageBinary);
+      return `/uploads/${user}/cover.jpg`;
     } catch (error) {
       errors.push({
         type: 'downloadImage error',
@@ -380,9 +353,8 @@ async function saveCoverFromDiscogsOrDefault(coverUri, user, errors) {
 
 function copyDefaultCover(user, errors) {
   try {
-    const coverPath = getUserCoverPath(user);
-    fs.copyFileSync(defaultCoverPath, coverPath);
-    return `/uploads/${sanitizeUserId(user)}/cover.jpg`;
+    uploadStorage.copyFile(uploadStorage.getDefaultCoverPath(), uploadStorage.getUserCoverPath(user));
+    return `/uploads/${user}/cover.jpg`;
   } catch (error) {
     errors.push({
       type: 'default cover error',
@@ -390,13 +362,6 @@ function copyDefaultCover(user, errors) {
     });
     return undefined;
   }
-}
-
-function getUserCoverPath(user) {
-  const safeUser = sanitizeUserId(user);
-  const userUploadDir = `${uploadDir}/${safeUser}`;
-  fs.mkdirSync(userUploadDir, { recursive: true });
-  return `${userUploadDir}/cover.jpg`;
 }
 
 function artistNameHandler(str) {

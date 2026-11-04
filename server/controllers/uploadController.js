@@ -1,8 +1,5 @@
-const fs = require('fs-extra')
 const { sanitizeUserId } = require('../utils/sanitizeUserId')
-const rootDir = process.env.ROOT_DIR;
-const uploadDir =  rootDir + "/uploads";
-const autoUploadDir =  rootDir + "/uploads/auto";
+const uploadStorage = require('../storage/uploadStorage')
 const UploadService = require("../services/uploadService");
 const metadataService = require("../services/metadataService");
 const Video = require("../models/video-model");
@@ -18,28 +15,29 @@ const startAutoUpload = async (req, res) => {
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message })
   }
-  const files = fs.readdirSync(`${autoUploadDir}/audio`)
-  const uploadUserDir = `${uploadDir}/${userID}`;
+  const audioDir = uploadStorage.getAutoAudioDir()
+  const visualDir = uploadStorage.getAutoVisualDir()
+  const files = uploadStorage.listFiles(audioDir)
+  const uploadUserDir = uploadStorage.getUserUploadDir(userID);
   const uploadService = new UploadService()
-  // const newUpload = new UploadItem(uploadData, uploadUserDir)
   await uploadService.setUploadData(uploadData, uploadUserDir)
 
   for (const file of files) {
     if (file !== '.DS_Store') {
-      let filePath = `${autoUploadDir}/audio/${file}`
+      let filePath = `${audioDir}/${file}`
       const metadata = await metadataService.readID3Tags(filePath)
       let releaseID = file.split('--')[0]
-      // const pictureData = `data:${metadata.picture.format};base64,${metadata.picture.data.toString('base64')}`
       if (metadata) {
         const pictureData = metadata.picture.data
+        const visualCoverPath = `${visualDir}/cover.jpg`
         /// create cover file
-        fs.writeFileSync(`${autoUploadDir}/visual/cover.jpg`, pictureData)
+        uploadStorage.writeFile(visualCoverPath, pictureData)
         /// cover move
-        fs.copySync(`${autoUploadDir}/visual/cover.jpg`, `${uploadUserDir}/cover.jpg`)
-        fs.unlinkSync(`${autoUploadDir}/visual/cover.jpg`);
+        uploadStorage.copyFile(visualCoverPath, `${uploadUserDir}/cover.jpg`)
+        uploadStorage.removeFile(visualCoverPath);
         /// audio move
-        fs.copySync(filePath, `${uploadUserDir}/audio.mp3`)
-        fs.unlinkSync(filePath);
+        uploadStorage.copyFile(filePath, `${uploadUserDir}/audio.mp3`)
+        uploadStorage.removeFile(filePath);
       }
       const fileData = {
         title: metadata.title
@@ -90,7 +88,7 @@ const uploadFiles = async (req, res) => {
     return res.status(400).json({ success: false, message: error.message })
   }
 
-  const uploadUserDir = `${uploadDir}/${userID}`;
+  const uploadUserDir = uploadStorage.getUserUploadDir(userID);
   const uploadedFiles = req.files
   const uploadService = new UploadService()
 
@@ -188,8 +186,7 @@ const uploadFileRVBD = async (req, res) => {
       });
     }
 
-    const uploadUserDir = `${uploadDir}/${userID}`;
-    fs.ensureDirSync(uploadUserDir);
+    const uploadUserDir = uploadStorage.getUserUploadDir(userID);
 
     const discogsResult = await metadataService.getDiscogsByReleaseID({
       releaseID,
@@ -215,9 +212,9 @@ const uploadFileRVBD = async (req, res) => {
     const audioCountryYear = buildCountryYear(release);
     const uploadService = new UploadService()
 
-    fs.moveSync(uploadedFile.path, `${uploadUserDir}/audio.mp3`, { overwrite: true });
+    uploadStorage.moveFile(uploadedFile.path, `${uploadUserDir}/audio.mp3`, { overwrite: true });
 
-    if (!fs.existsSync(`${uploadUserDir}/cover.jpg`)) {
+    if (!uploadStorage.fileExists(`${uploadUserDir}/cover.jpg`)) {
       return res.status(400).json({
         success: false,
         message: "Discogs cover was not downloaded",

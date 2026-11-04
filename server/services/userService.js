@@ -1,9 +1,5 @@
-const fs = require("fs");
-const config = require("../config/config");
-const rootDir = process.env.ROOT_DIR;
-const uploadDir =  rootDir + "/uploads";
 const User = require("../models/user-model");
-const { sanitizeUserId } = require("../utils/sanitizeUserId");
+const uploadStorage = require("../storage/uploadStorage");
 var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
 
@@ -196,10 +192,7 @@ class UserService {
 
     async createUserFolder(userID) {
         try {
-            const safeUserID = sanitizeUserId(userID);
-            if (!fs.existsSync(`${uploadDir}/${safeUserID}`)) {
-                fs.mkdirSync(`${uploadDir}/${safeUserID}`);
-            }
+            uploadStorage.getUserUploadDir(userID);
             return true;
         } catch (error) {
             console.log('createUserFolder error ', error.message)
