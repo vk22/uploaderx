@@ -4,6 +4,7 @@ const multer = require('multer')
 const uploadController = require('../controllers/uploadController')
 const metadataController = require("../controllers/metadataController");
 const { sanitizeUserId } = require('../utils/sanitizeUserId')
+const { requireBasicAuth } = require('../middleware/basicAuth')
 const rootDir = process.env.ROOT_DIR;
 const uploadDir =  rootDir + "/uploads";
 const uploadDirRVBD =  rootDir + "/uploads/auto/audio";
@@ -53,8 +54,8 @@ router.post('/videos-last', uploadController.getMyLastVideos)
 /// File Upload 
 router.post('/start-auto-upload', uploadController.startAutoUpload)
 
-/// File Upload 
-router.get('/get-video-list', uploadController.getAllVideos)
+/// File Upload
+router.get('/get-video-list', requireBasicAuth, uploadController.getAllVideos)
 
 /// Cover Upload 
 router.post('/upload-file-rvbd', uploadRVBD, uploadController.uploadFileRVBD)
