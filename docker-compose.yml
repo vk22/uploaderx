@@ -18,7 +18,11 @@ services:
       ROOT_DIR: /app/data
       PORT: 8000
     volumes:
-      - uploads_data:/app/data/uploads
+      # Bind-mounted (not a named volume) so uploaded audio/covers/generated
+      # video survive rebuilds regardless of the compose project name.
+      # Override UPLOADS_DIR (e.g. in a root .env) to an absolute path on
+      # the host, e.g. /var/lib/uploaderx/uploads, for a VPS deployment.
+      - ${UPLOADS_DIR:-./data/uploads}:/app/data/uploads
       - ./client/public/fonts:/app/data/fonts:ro
       - ./client/public/sources:/app/data/sources:ro
       - ./client/public/cover.jpg:/app/data/cover.jpg:ro
@@ -43,4 +47,3 @@ networks:
 
 volumes:
   mongo_data:
-  uploads_data:

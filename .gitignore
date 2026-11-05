@@ -31,3 +31,6 @@ dump/
 
 # uploads
 client/public/uploads
+
+# docker bind-mount default for uploaded media (server/storage uploadStorage.js)
+/data/
