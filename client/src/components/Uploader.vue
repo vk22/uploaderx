@@ -13,12 +13,10 @@
         <div>{{ audioData.filename }}</div>
       </div>
       <div class="right">
-        <!-- <div @click="testAlert()">TestAlert</div> -->
         <div class="discogs-btn v-btn-small" @click="discogsHelperWindow">
           <span class="icon discogs-icon"></span>
           Discogs Helper
         </div>
-        <!-- <v-icon class="ml-4" @click="removeAllFiles">mdi-delete</v-icon> -->
         <div class="remove-track" @click="removeAllFiles">
           <RemoveBtn></RemoveBtn>
         </div>
@@ -41,9 +39,6 @@
 
     <!-- Dropzone -->
     <div class="drop-zone-container" v-show="!audioFileIsAdded">
-      <!-- <div class="block-title">
-        <h3>Upload your audio file</h3>
-      </div> -->
       <div v-if="user">
         <div v-if="user.id === autoUploadUser" class="btn mb-3" @click="startAutoUpload()">Start AutoUpload</div>
       </div> 
@@ -61,131 +56,91 @@
       <div class="block-title">
         <h3>Video details</h3>
       </div>
-      <v-row>
-        <!-- Col R -->
-        <v-col>
-          <!--- Cover Dropzone-->
-          <v-row>
-            <v-col class="cover-wrap">
-              <div class="cover-loading" v-if="coverLoading">
-                <v-progress-circular
-                  :color="progressColor"
-                  indeterminate
-                  rounded
-                  height="6"
-                ></v-progress-circular>
-              </div>
-              <div
-                class="form-group cover-container"
-                v-if="!releaseCoverNeed && !coverLoading"
-              >
-                <div class="cover-preview">
-                  <img :src="videoData.pictureURL" class="cover" />
-                </div>
-              </div>
-              <div
-                class="form-group cover-dropzone"
-                v-bind:class="{
-                  active: releaseCoverNeed && !coverLoading,
-                  error: inputHasError('cover'),
-                }"
-              >
-                <FileUploader
-                  @files-dropped2="coverAdded"
-                  :type="'cover'"
-                ></FileUploader>
-              </div>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="d-flex justify-center align-center">
-              <v-checkbox
-                v-model="releaseCoverNeed"
-                :label="`Change cover?`"
-                v-show="releaseCoverExist"
-              ></v-checkbox>
-            </v-col>
-          </v-row>
-          <!--- Video Form -->
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model="videoData.title"
-                variant="outlined"
-                clearable
-                label="Title"
-                type="text"
-                :error="inputHasError('title')"
-              >
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-textarea
-                v-model="videoData.description"
-                variant="outlined"
-                clearable
-                label="Description"
-                type="text"
-                :error="inputHasError('description')"
-              >
-              </v-textarea>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model="videoData.tags"
-                variant="outlined"
-                clearable
-                label="Tags"
-                type="text"
-                :error="inputHasError('tags')"
-              >
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <VideoTemplatePicker :templates="uploadTemplates" v-model="uploadTemplate"></VideoTemplatePicker>
-          <v-row>
-            <v-col
-              class="d-flex justify-start align-center"
-              cols="12"
-            >
-            <div class="radio-block">
-              <v-radio-group inline v-model="videoData.privacyStatus">
-                <v-radio
-                  v-for="(option, index) in privacyList"
-                  :key="index"
-                  :label="option.name"
-                  :value="option.value"
-                ></v-radio>
-              </v-radio-group>
+      <div>
+        <!--- Cover Dropzone-->
+        <div class="cover-wrap mb-4">
+          <div class="cover-loading" v-if="coverLoading">
+            <Spinner size="lg" :color="progressColor" />
+          </div>
+          <div
+            class="form-group cover-container"
+            v-if="!releaseCoverNeed && !coverLoading"
+          >
+            <div class="cover-preview">
+              <img :src="videoData.pictureURL" class="cover" />
             </div>
+          </div>
+          <div
+            class="form-group cover-dropzone"
+            v-bind:class="{
+              active: releaseCoverNeed && !coverLoading,
+              error: inputHasError('cover'),
+            }"
+          >
+            <FileUploader
+              @files-dropped2="coverAdded"
+              :type="'cover'"
+            ></FileUploader>
+          </div>
+        </div>
+        <div class="mb-4 flex items-center justify-center">
+          <Checkbox
+            v-model="releaseCoverNeed"
+            label="Change cover?"
+            v-show="releaseCoverExist"
+          ></Checkbox>
+        </div>
+        <!--- Video Form -->
+        <div class="mb-4">
+          <TextInput
+            v-model="videoData.title"
+            clearable
+            label="Title"
+            type="text"
+            :error="inputHasError('title')"
+          >
+          </TextInput>
+        </div>
+        <div class="mb-4">
+          <TextInput
+            v-model="videoData.description"
+            multiline
+            clearable
+            label="Description"
+            :error="inputHasError('description')"
+          >
+          </TextInput>
+        </div>
 
-            </v-col>
-            <!-- <v-col class="d-flex justify-end align-center" cols="4">
-                      <v-checkbox v-model="videoData.isForChildren" :label="`Made For Kids (?)`"></v-checkbox>
-                    </v-col> -->
-          </v-row>
+        <div class="mb-4">
+          <TextInput
+            v-model="videoData.tags"
+            clearable
+            label="Tags"
+            type="text"
+            :error="inputHasError('tags')"
+          >
+          </TextInput>
+        </div>
+        <VideoTemplatePicker :templates="uploadTemplates" v-model="uploadTemplate"></VideoTemplatePicker>
+        <div class="mb-4 flex items-center justify-start">
+          <div class="radio-block">
+            <RadioGroup v-model="videoData.privacyStatus" :options="privacyList"></RadioGroup>
+          </div>
+        </div>
 
-          <v-row>
-            <v-col>
-              <div class="submit-group">
-                <div
-                  v-if="uploadDisabled == 0 && !fileLoading"
-                  class="btn btn-upload full-w"
-                  v-on:click="startUpload"
-                >
-                  Upload track
-                </div>
-              </div>
-            </v-col>
-          </v-row>
-        </v-col>
-        <!-- Col R -->
-      </v-row>
+        <div>
+          <div class="submit-group">
+            <div
+              v-if="uploadDisabled == 0 && !fileLoading"
+              class="btn btn-upload full-w"
+              v-on:click="startUpload"
+            >
+              Upload track
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -207,6 +162,10 @@ import useAudioFile from '../composables/useAudioFile'
 import useDiscogsLookup from '../composables/useDiscogsLookup'
 import useVideoUpload from '../composables/useVideoUpload'
 import useAutoUpload from '../composables/useAutoUpload'
+import Spinner from "../components/Spinner.vue";
+import Checkbox from "../components/Checkbox.vue";
+import RadioGroup from "../components/RadioGroup.vue";
+import TextInput from "../components/TextInput.vue";
 window.process = process;
 window.Buffer = Buffer;
 const mainStore = useMainStore();
@@ -215,6 +174,7 @@ const authenticated = computed(() => authStore.authenticated);
 const user = computed(() => authStore.user);
 const uploadingState = computed(() => mainStore.getUploadingState);
 const progressColor = computed(() => mainStore.getProgressColor);
+const fileLoading = computed(() => mainStore.getFileLoading);
 
 const formDataController = useUploadFormData();
 const {

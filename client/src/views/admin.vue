@@ -1,44 +1,44 @@
 <template>
   <div class="admin-page">
-    <v-row>
-      <v-col>
+    <div class="grid grid-cols-2 gap-6">
+      <div>
         <div
           v-if="videos.length"
           class="table-container"
           role="table"
           aria-label="Destinations"
         >
-          <v-table>
+          <table class="w-full">
               <tbody>
                 <tr v-for="(item, index) in videos" :key="index">
-                  <td>
+                  <td class="p-2">
                     <a
                       :href="`https://www.youtube.com/watch?v=${item.url}`"
                       target="_blank"
                       >{{ item.url }}</a
                     >
                   </td>
-                  <td>{{ new Date(item.date).toLocaleDateString("en-US") }}</td>
+                  <td class="p-2">{{ new Date(item.date).toLocaleDateString("en-US") }}</td>
                 </tr>
               </tbody>
-          </v-table>
+          </table>
         </div>
-      </v-col>
-      <v-col> 
-        <v-table>
+      </div>
+      <div>
+        <table class="w-full">
               <tbody>
                 <tr v-for="(item, index) in users" :key="index">
-                  <td>
+                  <td class="p-2">
                     <img :src="item.picture" alt="" class="avatar">
                   </td>
-                  <td>{{ item.username }}</td>
+                  <td class="p-2">{{ item.username }}</td>
                 </tr>
               </tbody>
-          </v-table>
-      </v-col>
-    </v-row>
+          </table>
+      </div>
+    </div>
   </div>
-</template>    
+</template>
 
 <script setup>
 import axios from "axios";

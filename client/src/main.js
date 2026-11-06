@@ -1,3 +1,5 @@
+import '@mdi/font/css/materialdesignicons.css'
+import './assets/css/tailwind.css'
 import './assets/scss/main.scss'
 
 import { createApp } from 'vue'

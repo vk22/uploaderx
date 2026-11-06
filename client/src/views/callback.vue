@@ -1,27 +1,19 @@
 <template>
-<v-container>
-  <v-row>
-    <v-col>
-      <div class="progress-wrap" v-if="showLogging">
-        <v-progress-circular
-          color="indigo-darken accent-4"
-          indeterminate
-          rounded
-          height="6"
-        ></v-progress-circular>
+<div class="mx-auto max-w-[1200px]">
+  <div class="progress-wrap" v-if="showLogging">
+    <Spinner size="lg" color="#3730a3" />
 
-        <div class="progress-status">
-          Logging in...
-        </div>
-      </div>
-                
-    </v-col>
-  </v-row>    
-</v-container>
+    <div class="progress-status">
+      Logging in...
+    </div>
+  </div>
+</div>
 </template>
 
 <script>
+    import Spinner from "../components/Spinner.vue";
     export default {
+        components: { Spinner },
         data() {
           return {
             showLogging: false

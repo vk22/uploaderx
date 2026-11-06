@@ -1,7 +1,6 @@
 <template>
   <section class="text-page">
-    <v-row>
-      <v-col>
+    <div>
         <h3>About</h3>
 
         <p>
@@ -50,8 +49,7 @@
           assertion that the use of the material is not authorized and an
           assertion that you are the copyright holder/representative.
         </p>
-      </v-col>
-    </v-row>
+    </div>
   </section>
 </template>
 

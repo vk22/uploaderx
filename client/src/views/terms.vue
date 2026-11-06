@@ -1,7 +1,6 @@
 <template>
   <section class="text-page">
-    <v-row>
-      <v-col>
+    <div>
         <h3>Terms and Conditions</h3>
         <p>
           By using uploader-x.com, you agree to be bound by the following terms
@@ -50,8 +49,7 @@
           Features may have to be added/changed/removed as and when APIs (or
           their rules) are changed.
         </p>
-      </v-col>
-    </v-row>
+    </div>
   </section>
 </template>
 

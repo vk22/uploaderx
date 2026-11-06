@@ -1,17 +1,16 @@
 
 
 <template>
-  <v-app>
+  <div>
     <Alert />
     <Header />
     <div id="app-container">
-      <v-container>
+      <div class="mx-auto max-w-[1200px]">
         <RouterView />
-      <Footer />
-      </v-container>
+        <Footer />
+      </div>
     </div>
-  </v-app>  
-  
+  </div>
 </template>
 
 <script setup>

@@ -1,42 +1,37 @@
 <template>
   <div>
   <div class="user-page" v-if="user">
-    <v-row>
-      <v-col class="center">
-        <div>
-          <img :src="user.picture" alt="" class="avatar">
-        </div>
-        <div>
-          <h3>{{ user.name }}</h3> 
-        </div>
-        <div>
-            {{ user.id }}
-        </div>
-        <div>
-        <b>Plan:</b> {{ user.plan }}
-        </div>
-      </v-col>
-    </v-row>
+    <div class="center">
+      <div>
+        <img :src="user.picture" alt="" class="avatar">
+      </div>
+      <div>
+        <h3>{{ user.name }}</h3>
+      </div>
+      <div>
+          {{ user.id }}
+      </div>
+      <div>
+      <b>Plan:</b> {{ user.plan }}
+      </div>
+    </div>
 
-    <v-row v-if="user.uploads">
-      <v-col>
-        <div>
-          <b>Uploads Today:</b> {{ user.uploads.length }}
-        </div>
-      </v-col>
-    </v-row>
+    <div v-if="user.uploads">
+      <div>
+        <b>Uploads Today:</b> {{ user.uploads.length }}
+      </div>
+    </div>
     <div v-if="user.uploads" class="table-container" role="table" aria-label="Destinations">
-        <v-simple-table>
-          <template v-slot:default>
+        <table class="w-full">
             <thead>
               <tr>
-                <th class="text-left">
+                <th class="p-2 text-left">
                   Title
                 </th>
-                <th class="text-left">
+                <th class="p-2 text-left">
                   URL
                 </th>
-                <th class="text-left">
+                <th class="p-2 text-left">
                   Date
                 </th>
               </tr>
@@ -46,13 +41,12 @@
                 v-for="(item, index) in user.uploads"
                 :key="index"
               >
-                <td>{{ item.title }}</td>
-                <td><a :href="`https://www.youtube.com/watch?v=${item.url}`" target="_blank">{{ item.url }}</a></td>
-                <td>{{ new Date(item.date) }}</td>
+                <td class="p-2">{{ item.title }}</td>
+                <td class="p-2"><a :href="`https://www.youtube.com/watch?v=${item.url}`" target="_blank">{{ item.url }}</a></td>
+                <td class="p-2">{{ new Date(item.date) }}</td>
               </tr>
             </tbody>
-          </template>
-        </v-simple-table>
+        </table>
       </div>
   </div>
   </div>

@@ -1,7 +1,6 @@
 <template>
   <section class="text-page">
-    <v-row>
-      <v-col>
+    <div>
         <h3>Privacy Policy</h3>
         <p>
           This privacy policy sets out how UploaderX uses and protects any
@@ -167,8 +166,7 @@
         <a href="http://optout.networkadvertising.org/?c=1"
           >http://optout.networkadvertising.org/?c=1</a
         >
-      </v-col>
-    </v-row>
+    </div>
   </section>
 </template>
 

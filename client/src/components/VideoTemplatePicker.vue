@@ -1,11 +1,11 @@
 <template>
-  <v-row class="choose-template">
-    <v-col cols="12">
+  <div class="choose-template grid grid-cols-2 gap-3">
+    <div class="col-span-2">
       <div class="block-subtitle">
         Choose video template
       </div>
-    </v-col>
-    <v-col cols="6" v-for="(template, index) in templates" :key="index">
+    </div>
+    <div v-for="(template, index) in templates" :key="index">
       <div
         class="choose-template__item"
         @click="$emit('update:modelValue', template.id)"
@@ -13,8 +13,8 @@
       >
         <img :src="template.icon" alt="">
       </div>
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
 
 <script setup>

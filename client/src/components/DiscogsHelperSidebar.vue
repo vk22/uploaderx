@@ -1,85 +1,66 @@
 <template>
   <div class="sidebar-right" :class="{ show }">
     <div class="sidebar-close">
-      <v-icon left @click="$emit('close')">mdi-close</v-icon>
+      <i class="mdi mdi-close cursor-pointer" @click="$emit('close')"></i>
     </div>
-    <v-container>
+    <div>
       <div class="block-title text-left">
         <h3>Discogs Helper</h3>
       </div>
-      <v-row>
-        <v-col>
-          <div class="discogs-field">
-            <v-text-field
-              v-model="discogsLink"
-              variant="outlined"
-              clearable
-              label="Link on Release Page"
-              type="text"
-            >
-            </v-text-field>
-            <div class="discogs-link" @click="$emit('search')">
-              Search
+      <div class="mb-4">
+        <div class="discogs-field">
+          <TextInput v-model="discogsLink" label="Link on Release Page" clearable />
+          <div class="discogs-link" @click="$emit('search')">
+            Search
+          </div>
+        </div>
+      </div>
+      <div class="release-data" v-show="release.id">
+        <div class="mb-4">
+          <div class="cover-item" v-if="coverUri">
+            <div class="cover-item__img">
+              <img :src="coverUri" alt="" />
+            </div>
+            <div class="cover-item__label">
+              <i class="mdi mdi-plus cursor-pointer" @click="$emit('search')"></i>
             </div>
           </div>
-        </v-col>
-      </v-row>
-      <div class="release-data" v-show="release.id">
-        <v-row>
-          <v-col>
-            <div class="cover-item" v-if="coverUri">
-              <div class="cover-item__img">
-                <img :src="coverUri" alt="" />
-              </div>
-              <div class="cover-item__label">
-                <v-icon @click="$emit('search')">mdi-plus</v-icon>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="label">Release ID</div>
-            <div class="data">
-              <a
-                v-bind:href="release.link"
-                target="_blank"
-                class="link"
-                >{{ release.id }}</a
-              >
-            </div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="label">Album</div>
-            <div class="data">{{ album }}</div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="label">Artist</div>
-            <div class="data">{{ artist }}</div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="label">Country</div>
-            <div class="data">{{ country }}</div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="label">Year</div>
-            <div class="data">{{ year }}</div>
-          </v-col>
-        </v-row>
+        </div>
+        <div class="mb-4">
+          <div class="label">Release ID</div>
+          <div class="data">
+            <a
+              v-bind:href="release.link"
+              target="_blank"
+              class="link"
+              >{{ release.id }}</a
+            >
+          </div>
+        </div>
+        <div class="mb-4">
+          <div class="label">Album</div>
+          <div class="data">{{ album }}</div>
+        </div>
+        <div class="mb-4">
+          <div class="label">Artist</div>
+          <div class="data">{{ artist }}</div>
+        </div>
+        <div class="mb-4">
+          <div class="label">Country</div>
+          <div class="data">{{ country }}</div>
+        </div>
+        <div class="mb-4">
+          <div class="label">Year</div>
+          <div class="data">{{ year }}</div>
+        </div>
       </div>
-    </v-container>
+    </div>
   </div>
 </template>
 
 <script setup>
+import TextInput from "./TextInput.vue";
+
 defineProps({
   show: { type: Boolean, default: false },
   release: { type: Object, default: () => ({ id: null, link: null }) },

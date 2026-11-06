@@ -4,9 +4,6 @@
  * Automatically included in `./src/main.js`
 //  */
 
-// Plugins
-import vuetify from './vuetify'
-
 // Custom
 import helpers from './globalFunc.js'
 
@@ -22,7 +19,6 @@ import helpers from './globalFunc.js'
 
 export function registerPlugins (app) {
   app
-    .use(vuetify)
     .use(helpers, {
       greetings: {
         hello: 'Bonjour!'

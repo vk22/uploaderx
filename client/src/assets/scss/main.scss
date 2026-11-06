@@ -139,18 +139,6 @@ a {
     }
 }
 
-.v-container {
-    max-width: 1200px!important;
-}
-
-.v-application {
-    [class*='text-'] {
-      color: #36405a;
-      font-family: $font-family, sans-serif !important;
-    }
-    font-family: $font-family, sans-serif !important;
-  }
-
 ::placeholder {
     color:#bbb!important;
   }
@@ -246,31 +234,6 @@ a {
   .custom-checkbox:disabled+label::before {
     background-color: #e9ecef;
   }
-
-////////////
-
-// .v-text-field .v-input__control .v-input__slot {
-//     min-height: auto !important;
-//     display: flex !important;
-//     align-items: center !important;
-//   }
-
-
-.v-label.v-label--active.theme--light {
-    color: #000!important;
-}
-
-.primary--text .theme--light.v-text-field--outlined:not(.v-input--is-focused):not(.v-input--has-state)>.v-input__control>.v-input__slot fieldset {
-    color: rgba(0,0,0,.9)!important;
-}
-
-.v-application .primary--text {
-    color: #000!important;
-    caret-color: #000!important;
-}
-
-////////////
-
 
 .navbar-brand {
     font-size: 1.1rem;
@@ -389,18 +352,3 @@ a {
     background: url('../assets/img/discogs.png') no-repeat center center;
     background-size: 100%;
 }
-
-///// vuetify edit
-
-.v-text-field.v-text-field--enclosed .v-text-field__details {
-    display: none;
-  }
-  
-  .v-input--dense>.v-input__control>.v-input__slot {
-    margin-bottom: 0px;
-  }
-  
-  .v-text-field input {
-    max-width: 90%;
-    width: 90%;
-  }

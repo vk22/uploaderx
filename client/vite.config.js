@@ -1,7 +1,6 @@
 // Plugins
 import vue from '@vitejs/plugin-vue'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import ViteFonts from 'unplugin-fonts/vite'
+import tailwindcss from '@tailwindcss/vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // Utilities
@@ -11,24 +10,8 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue({
-      template: { transformAssetUrls }
-    }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
-    vuetify({
-      autoImport: true,
-      styles: {
-        configFile: 'src/assets/scss/settings.scss',
-      },
-    }),
-    ViteFonts({
-      google: {
-        families: [{
-          name: 'Roboto',
-          styles: 'wght@100;300;400;500;700;900',
-        }],
-      },
-    }),
+    vue(),
+    tailwindcss(),
     // nodePolyfills({
     //   // To add only specific polyfills, add them here. If no option is passed, adds all polyfills
     //   include: ['path'],
@@ -72,8 +55,13 @@ export default defineConfig({
         '/api/': {
             target: 'http://localhost:8000',
             changeOrigin: true,
-            secure: false,      
+            secure: false,
             ws: true,
+        },
+        '/uploads/': {
+            target: 'http://localhost:8000',
+            changeOrigin: true,
+            secure: false,
         },
         '/socket.io': {
           target: 'http://localhost:8000',

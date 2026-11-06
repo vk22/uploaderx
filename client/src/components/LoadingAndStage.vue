@@ -1,13 +1,7 @@
 <template>
   <div>
     <div class="progress-wrap" v-if="fileLoading">
-      <v-progress-circular
-        v-if="fileLoading"
-        :color="progressColor"
-        indeterminate
-        rounded
-        height="6"
-      ></v-progress-circular>
+      <Spinner size="lg" :color="progressColor" />
 
       <div class="progress-status" v-if="fileLoading">
         {{ uploadingState }}
@@ -38,41 +32,18 @@
 </template>    
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import CloseBtn from "../components/CloseBtn.vue";
+import Spinner from "../components/Spinner.vue";
 import { useMainStore } from "@/stores/main";
 const props = defineProps(['uploadingState', 'progressColor']);
 const mainStore = useMainStore();
 const finalLink = computed(() => mainStore.getFinalLink);
 const fileLoading = computed(() => mainStore.getFileLoading);
+const color = '#000000';
 const clearFinalLink = () => {
   mainStore.clearFinalLink(true);
 }
-
-</script>
-
-<script>
-export default {
-  props: ['uploadingState', 'progressColor'],
-  data() {
-    return {
-      color: '#000000'
-    }
-  },
-  methods: {
-    clearFinalLink() {
-      this.$store.commit("clearFinalLink", true);
-    }
-  },
-  computed: {
-    finalLink() {
-      return this.$store.getters.getFinalLink;
-    },
-    fileLoading() {
-      return this.$store.getters.getFileLoading
-    },
-  }
-};
 </script>
 
 <style lang="scss">

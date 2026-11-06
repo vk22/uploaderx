@@ -8,61 +8,59 @@
     ></LoadingAndStage>
     
     <div class="youtube-parser" v-if="user">
-      <v-container>
+      <div>
         <div class="block-title text-left">
           <h3>YouTube Parser</h3>
         </div>
-        <!-- <div>
-          {{ wantlist }}
-        </div> -->
-        <v-row>
-          <v-col>
-            <div class="discogs-field">
-              <v-text-field
+        <div>
+          <div class="discogs-field">
+            <div style="width:90%">
+              <TextInput
                 v-model="playlistLink"
-                variant="outlined"
                 clearable
                 label="Playlist Link"
                 type="text"
-                style="width:90%"
-              >
-              </v-text-field>
-              <v-text-field
+              />
+            </div>
+            <div style="width:10%; margin-left: 0.5rem;">
+              <TextInput
                 v-model="separator"
-                variant="outlined"
                 label="Separator"
                 type="text"
-                style="width:10%; margin-left: 0.5rem;"
-              >
-              </v-text-field>
-              <div class="discogs-link" @click="searchYtb()">Search</div>
+              />
             </div>
-          </v-col>
-        </v-row>
+            <div class="discogs-link" @click="searchYtb()">Search</div>
+          </div>
+        </div>
 
-        <v-row class="search-result-list" v-show="searchYtbResult">
-          <v-col v-for="(item, index) in searchYtbResult" :key="index" cols="4">
+        <div class="search-result-list grid grid-cols-3 gap-4" v-show="searchYtbResult">
+          <div v-for="(item, index) in searchYtbResult" :key="index">
             <div class="search-result-item">
               <div class="cover-item" v-if="item.coverUri">
                 <div class="cover-item__img">
                   <img :src="item.coverUri" alt="" />
                 </div>
                 <div class="cover-item__plus" v-if="!checkIfReleaseExistInWanlist(item.id)">
-                  <v-icon @click="addToWantlist(item.id)">mdi-plus</v-icon>
+                  <i class="mdi mdi-plus cursor-pointer" @click="addToWantlist(item.id)"></i>
                 </div>
                 <div class="cover-item__plus" v-else>
-                  <v-icon @click="removeFromWantlist(item.id)">mdi-delete</v-icon>
+                  <i class="mdi mdi-delete cursor-pointer" @click="removeFromWantlist(item.id)"></i>
                 </div>
-                <!-- <div class="cover-item__exist" v-else>In Wantlist</div> -->
               </div>
 
               <div class="row mb-3">
-                <v-chip :color="item.releaseExist === 'release not exist' ? 'green' : 'red' " class="mr-1" size="small">
+                <span
+                  class="mr-1 inline-block rounded-full px-2 py-0.5 text-xs text-white"
+                  :class="item.releaseExist === 'release not exist' ? 'bg-green-600' : 'bg-red-600'"
+                >
                  {{ item.releaseExist }}
-                </v-chip>
-                <v-chip v-if="item.labelsWarnings" :color="'red'" size="small">
+                </span>
+                <span
+                  v-if="item.labelsWarnings"
+                  class="inline-block rounded-full bg-red-600 px-2 py-0.5 text-xs text-white"
+                >
                  dangerous label
-                </v-chip>
+                </span>
 
               </div>
               <div class="row">
@@ -90,25 +88,20 @@
                 <div class="data">{{ item.year }}</div>
               </div>
             </div>
-          </v-col>
-        </v-row>
-      </v-container>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</template>    
+</template>
 
 <script setup>
-// import { computed, ref } from "vue";
-// import { useAuthStore } from "@/stores/auth";
-// const authStore = useAuthStore();
-// const authenticated = computed(() => authStore.authenticated);
-// const user = computed(() => authStore.user);
-// const token = computed(() => authStore.token);
 import axios from "axios";
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useAuthStore } from "@/stores/auth";
 import LoadingAndStage from "../components/LoadingAndStage.vue";
+import TextInput from "../components/TextInput.vue";
 const authStore = useAuthStore();
 const mainStore = useMainStore();
 const loggedIn = computed(() => authStore.authenticated);
