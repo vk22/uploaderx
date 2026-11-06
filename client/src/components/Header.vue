@@ -55,6 +55,7 @@
 //@import '~/assets/scss/main.scss';
 
 .main-header {
+    top: 0;
     z-index: 1;
     position: fixed;
     width: 100%;

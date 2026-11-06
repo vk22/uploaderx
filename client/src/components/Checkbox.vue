@@ -1,5 +1,5 @@
 <template>
-  <label class="inline-flex cursor-pointer select-none items-center gap-2">
+  <label class="!inline-flex cursor-pointer select-none items-center gap-2">
     <input
       type="checkbox"
       v-model="model"

@@ -127,7 +127,7 @@ const borderColor = (variant) => {
 
   .close-alert {
     position: absolute;
-    top: 4px;
+    top: 10px;
     right: 10px;
     width: 12px;
     height: 12px;

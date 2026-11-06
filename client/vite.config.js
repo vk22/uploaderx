@@ -7,6 +7,12 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
+// Points at the API server. Defaults to localhost for plain `yarn dev`;
+// set to http://server:8000 (the compose service name) when running the
+// client via docker-compose.dev.yml, since "localhost" inside that
+// container is the container itself, not the server container.
+const apiProxyTarget = process.env.API_PROXY_TARGET || 'http://localhost:8000'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -50,23 +56,24 @@ export default defineConfig({
     ],
   },
   server: {
+    host: true,
     port: 9000,
     proxy: {
         '/api/': {
-            target: 'http://localhost:8000',
+            target: apiProxyTarget,
             changeOrigin: true,
             secure: false,
             ws: true,
         },
         '/uploads/': {
-            target: 'http://localhost:8000',
+            target: apiProxyTarget,
             changeOrigin: true,
             secure: false,
         },
         '/socket.io': {
-          target: 'http://localhost:8000',
+          target: apiProxyTarget,
           changeOrigin: true,
-          secure: false,      
+          secure: false,
           ws: true,
       }
     },

@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-wrap items-center gap-4">
+  <div class="w-full flex flex-wrap items-center justify-between gap-4">
     <label
       v-for="option in options"
       :key="option.value"
-      class="inline-flex cursor-pointer select-none items-center gap-2"
+      class="!flex cursor-pointer select-none items-center gap-1"
     >
       <input
         type="radio"

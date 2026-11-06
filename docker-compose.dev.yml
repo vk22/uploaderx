@@ -1,0 +1,22 @@
+# Dev override: runs the client as a Vite dev server with hot-reload
+# instead of a prod nginx build. Usage:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Edits under client/src on the host are picked up immediately, no
+# rebuild needed. Stop with the same -f flags (or plain `docker compose
+# down`, since it matches containers by project name regardless).
+services:
+  client:
+    build:
+      target: dev
+    image: uploaderx-client-dev
+    ports:
+      - "9100:9000"
+    environment:
+      API_PROXY_TARGET: http://server:8000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - server

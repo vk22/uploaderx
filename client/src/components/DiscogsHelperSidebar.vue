@@ -8,7 +8,7 @@
         <h3>Discogs Helper</h3>
       </div>
       <div class="mb-4">
-        <div class="discogs-field">
+        <div class="discogs-field flex items-end">
           <TextInput v-model="discogsLink" label="Link on Release Page" clearable />
           <div class="discogs-link" @click="$emit('search')">
             Search

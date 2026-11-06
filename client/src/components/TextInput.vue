@@ -7,7 +7,7 @@
         v-model="model"
         :placeholder="placeholder"
         :rows="rows"
-        class="w-full resize-y rounded-lg border bg-white px-3 py-2 text-base text-gray-900 outline-none transition focus:border-gray-900"
+        class="w-full resize-y rounded-lg border bg-white px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-900"
         :class="error ? 'border-red-500' : 'border-gray-300'"
       ></textarea>
       <input
@@ -15,17 +15,17 @@
         :type="type"
         v-model="model"
         :placeholder="placeholder"
-        class="w-full rounded-lg border bg-white px-3 py-2 text-base text-gray-900 outline-none transition focus:border-gray-900"
+        class="w-full rounded-lg border bg-white px-4 py-3 text-base text-gray-900 outline-none transition focus:border-gray-900"
         :class="[error ? 'border-red-500' : 'border-gray-300', clearable && model ? 'pr-9' : '']"
       />
-      <button
+      <!-- <button
         v-if="clearable && model"
         type="button"
         class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
         @click="model = ''"
       >
         ✕
-      </button>
+      </button> -->
     </div>
   </div>
 </template>

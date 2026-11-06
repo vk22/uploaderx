@@ -256,6 +256,8 @@
       animation: fadeDown2 1.5s ease-out;
       animation-fill-mode: forwards;
       .icon {
+        display: flex;
+        justify-content: center;
         margin-bottom: 1rem;
         color: #111;
       }
