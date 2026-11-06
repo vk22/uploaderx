@@ -29,10 +29,10 @@
       v-model:discogs-link="discogsLinkTemp"
       :release="audioData.discogsRelease"
       :cover-uri="audioData.coverUri"
-      :album="audioData.album"
-      :artist="audioData.artist"
-      :country="audioData.country"
-      :year="audioData.year"
+      v-model:album="audioData.album"
+      v-model:artist="audioData.artist"
+      v-model:country="audioData.country"
+      v-model:year="audioData.year"
       @close="discogsHelperWindow"
       @search="getDiscogsByReleaseID()"
     ></DiscogsHelperSidebar>
@@ -122,7 +122,7 @@
           >
           </TextInput>
         </div>
-        <VideoTemplatePicker :templates="uploadTemplates" v-model="uploadTemplate"></VideoTemplatePicker>
+        <VideoTemplatePicker :templates="uploadTemplates" v-model="uploadTemplate" :cover-url="videoData.pictureURL"></VideoTemplatePicker>
         <div class="mb-4 flex items-center justify-start">
           <div class="radio-block">
             <RadioGroup v-model="videoData.privacyStatus" :options="privacyList"></RadioGroup>

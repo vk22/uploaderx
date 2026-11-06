@@ -33,8 +33,8 @@ export default function useVideoUpload({ user, audioData, formData, onReset }) {
   const coverLoading = ref(false);
 
   const uploadTemplates = ref([
-    { id: 1, icon: "video-template-1.png", title: "Cover Left" },
-    { id: 2, icon: "video-template-2.png", title: "Cover Center" },
+    { id: 1, title: "Cover Left" },
+    { id: 2, title: "Cover Center" },
   ]);
   const uploadTemplate = ref(1);
 

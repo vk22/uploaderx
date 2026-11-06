@@ -27,31 +27,16 @@
           </div>
         </div>
         <div class="mb-4">
-          <div class="label">Release ID</div>
-          <div class="data">
-            <a
-              v-bind:href="release.link"
-              target="_blank"
-              class="link"
-              >{{ release.id }}</a
-            >
-          </div>
+          <TextInput v-model="album" label="Album" />
         </div>
         <div class="mb-4">
-          <div class="label">Album</div>
-          <div class="data">{{ album }}</div>
+          <TextInput v-model="artist" label="Artist" />
         </div>
         <div class="mb-4">
-          <div class="label">Artist</div>
-          <div class="data">{{ artist }}</div>
+          <TextInput v-model="country" label="Country" />
         </div>
         <div class="mb-4">
-          <div class="label">Country</div>
-          <div class="data">{{ country }}</div>
-        </div>
-        <div class="mb-4">
-          <div class="label">Year</div>
-          <div class="data">{{ year }}</div>
+          <TextInput v-model="year" label="Year" />
         </div>
       </div>
     </div>
@@ -65,13 +50,13 @@ defineProps({
   show: { type: Boolean, default: false },
   release: { type: Object, default: () => ({ id: null, link: null }) },
   coverUri: { type: String, default: undefined },
-  album: { type: String, default: undefined },
-  artist: { type: String, default: undefined },
-  country: { type: String, default: undefined },
-  year: { type: [String, Number], default: undefined },
 });
 
 const discogsLink = defineModel("discogsLink");
+const album = defineModel("album");
+const artist = defineModel("artist");
+const country = defineModel("country");
+const year = defineModel("year");
 
 defineEmits(["close", "search"]);
 </script>
