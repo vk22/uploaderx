@@ -15,7 +15,8 @@ RUN mkdir -p /app/data/uploads/auto/audio /app/data/uploads/auto/visual \
   && chown -R node:node /app /app/data
 
 ENV NODE_ENV=production \
-    ROOT_DIR=/app/data
+    ROOT_DIR=/app/data \
+    FONTCONFIG_FILE=/app/config/fonts.conf
 
 USER node
 

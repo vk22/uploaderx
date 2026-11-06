@@ -27,10 +27,13 @@
           </div>
         </div>
         <div class="mb-4">
-          <TextInput v-model="album" label="Album" />
+          <TextInput v-model="title" label="Track" />
         </div>
         <div class="mb-4">
           <TextInput v-model="artist" label="Artist" />
+        </div>
+        <div class="mb-4">
+          <TextInput v-model="album" label="Album" />
         </div>
         <div class="mb-4">
           <TextInput v-model="country" label="Country" />
@@ -54,6 +57,7 @@ defineProps({
 
 const discogsLink = defineModel("discogsLink");
 const album = defineModel("album");
+const title = defineModel("title");
 const artist = defineModel("artist");
 const country = defineModel("country");
 const year = defineModel("year");

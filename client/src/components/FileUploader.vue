@@ -99,13 +99,13 @@ defineExpose({ startUpload });
 	flex-direction: column;
 
 	.label-title {
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 300;
 		margin-bottom: 1rem;
 	}
 
 	.label-subtitle {
-		font-size: .95rem;
+		font-size: .85rem;
 		color: #999999;
 	}
 }

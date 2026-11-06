@@ -29,6 +29,7 @@
       v-model:discogs-link="discogsLinkTemp"
       :release="audioData.discogsRelease"
       :cover-uri="audioData.coverUri"
+      v-model:title="audioData.title"
       v-model:album="audioData.album"
       v-model:artist="audioData.artist"
       v-model:country="audioData.country"

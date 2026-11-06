@@ -36,6 +36,14 @@ $font-family-title: "Inter";
 
 $transition: all .25s ease-in-out;
 
+// Everything below is plain (unlayered) CSS by default, and CSS cascade
+// layers give unlayered rules higher priority than ANY layered rule —
+// including every Tailwind utility class, which Tailwind puts in
+// @layer utilities. Without this @layer base wrapper, a bare-tag rule
+// like `p { font-weight: 300 }` below would silently beat `font-bold`
+// (or any other utility) applied to a <p> anywhere in the app.
+@layer base {
+
 html, body {
     font-family: $font-family, Tahoma, Arial, sans-serif;
     //font-family: -apple-system,BlinkMacSystemFont,San Francisco,Helvetica Neue,Helvetica,Ubuntu,Montserrat,Noto,Segoe UI,Arial,sans-serif;
@@ -352,3 +360,5 @@ a {
     background: url('../assets/img/discogs.png') no-repeat center center;
     background-size: 100%;
 }
+
+} // @layer base

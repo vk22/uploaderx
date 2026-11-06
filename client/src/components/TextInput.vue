@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="mb-1 block text-sm font-medium text-gray-700">{{ label }}</label>
+    <p v-if="label" class="mb-1 block text-xs font-bold text-gray-700">{{ label }}</p>
     <div class="relative">
       <textarea
         v-if="multiline"

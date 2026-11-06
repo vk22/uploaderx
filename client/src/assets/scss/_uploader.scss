@@ -1,5 +1,10 @@
 @import "./main.scss";
 
+// See the comment in main.scss: unlayered CSS always beats Tailwind's
+// @layer utilities, so this file's selectors need to live in @layer
+// base too or they'd silently win over any Tailwind utility class.
+@layer base {
+
 .upload-container {
   position: relative;
   width: 100%;
@@ -446,7 +451,7 @@
 }
 
 .sidebar-right {
-  padding: 1rem 1rem;
+  padding: 1.5rem 1.5rem;
   position: fixed;
   background: #fff;
   top: 170px;
@@ -473,7 +478,7 @@
 
   .sidebar-close {
     position: absolute;
-    top: 1.75rem;
+    top: 1rem;
     right: 1rem;
   }
 
@@ -563,3 +568,5 @@
 .v-input__details {
   display: none!important;
 }
+
+} // @layer base

@@ -21,7 +21,6 @@ function assembleVideo(coverFile, audioFile, outputFolder) {
         "-ar 44100",
         "-movflags +faststart",
         "-shortest",
-        "-threads 1",
       ])
       .output(outputPath)
       .on("start", (cmd) => console.log("FFmpeg started:", cmd))
