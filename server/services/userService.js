@@ -59,12 +59,16 @@ class UserService {
         console.log('logout ', id)
         try {
             const user = await User.findOne({ id: id })
+            if (!user) {
+                return { success: true, message: "User logout" };
+            }
             user.refreshToken = ''
-            user.save();
+            await user.save();
             return { success: true, message: "User logout" };
 
         } catch (error) {
-             console.log(error.message)
+            console.log(error.message)
+            return { success: false, message: error.message };
         }
     }
 
