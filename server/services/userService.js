@@ -143,8 +143,11 @@ class UserService {
                         return newTokens.tokens
                     }
                 }
-            } else {
-                const newTokens = await this.refreshToken(tokens)
+            } else if (user.refreshToken) {
+                // Legacy users only have the flat refreshToken string
+                // (no tokens object yet); refreshToken() expects a
+                // Google credentials-shaped object.
+                const newTokens = await this.refreshToken({ refresh_token: user.refreshToken })
                 console.log('newTokens ', newTokens)
                 if (newTokens.success) {
                     /// user save new tokens
@@ -153,7 +156,7 @@ class UserService {
                 }
             }
 
-            
+            return false;
         } else {
             return false;
         }
@@ -161,6 +164,12 @@ class UserService {
 
     async refreshToken(tokens) {
         try {
+            if (!tokens) {
+                return ({
+                    success: false,
+                    message: "no token",
+                });
+            }
             console.log("refreshtoken: " + tokens.refresh_token);
             if (tokens) {
                 const clientSecret = process.env.CLIENT_SECRET;
@@ -191,6 +200,10 @@ class UserService {
             }
         } catch (e) {
             console.log("refreshtoken ", e);
+            return ({
+                success: false,
+                message: e.message,
+            });
         }
     };
 
