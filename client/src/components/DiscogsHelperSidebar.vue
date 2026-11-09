@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar-right" :class="{ show }">
+  <div class="sidebar-right bg-[#f8f8f8]" :class="{ show }">
     <div class="sidebar-close">
       <i class="mdi mdi-close cursor-pointer" @click="$emit('close')"></i>
     </div>
@@ -15,7 +15,7 @@
           </div>
         </div>
       </div>
-      <div class="release-data" v-show="release.id">
+      <div class="release-data">
         <div class="mb-4">
           <div class="cover-item" v-if="coverUri">
             <div class="cover-item__img">

@@ -1,6 +1,6 @@
 <template>
   <div class="index-page content content--canvas">
-    <div class="hero-background" ref="canvasWrap">
+    <!-- <div class="hero-background" ref="canvasWrap">
       <video
         playsinline=""
         autoplay="autoplay"
@@ -10,15 +10,15 @@
       >
         <source src="/gradient.webm" type="video/webm" />
       </video>
-    </div>
+    </div> -->
     <div class="main-hero-section">
       <div class="hero-content">
         <div class="hero-icons">
           <img src="/audio-b.svg" alt="" />
-          <img src="/arrow.svg" alt="" style="height: 40px;"/>
+          <img src="/arrow2.svg" alt="" style="height: 40px;"/>
           <img src="/youtube.svg" alt="" />
         </div>
-        <h1 class="hero-title">Smart<br>Music Uploader</h1>
+        <h1 class="hero-title">Show the world your favourite music</h1>
         <h2 class="hero-subtitle">
           A tool to create a YouTube music channel<br />from your local files.
         </h2>
@@ -223,10 +223,8 @@
 
       .hero-title {
         margin-bottom: 3rem;
-        font-size: 7rem;
         text-align: center;
-        line-height: 7.5rem;
-        font-weight: 700;
+        font-weight: 600;
         color: #0d0d0d;
 
         @include for-phone-only {
@@ -235,8 +233,8 @@
         }
 
         @include for-tablet-portrait-up {
-          font-size: 5.5rem;
-          line-height: 5.75rem;
+          font-size: 5rem;
+          line-height: 5.25rem;
         }
 
       }

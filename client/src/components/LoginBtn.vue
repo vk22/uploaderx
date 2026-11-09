@@ -47,13 +47,13 @@ async function sendCodeToBackend(code) {
   background-color: #1a1919;
   border: 2px solid #1a1919;
   display: flex;
-  height: 62px;
+  height: 54px;
   justify-content: center;
-  width: 210px;
+  width: 220px;
   padding-right: 10px;
   cursor: pointer;
   box-shadow: 0px 1px 25px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  border-radius: 991px;
   transition: all .25s ease-in-out;
   // animation: fadeDown 2s cubic-bezier(0,4,1,4);
 
