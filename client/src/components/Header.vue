@@ -1,7 +1,7 @@
 <template>
   <header class="main-header">
     <div class="logo-wrap">
-      <router-link to="/"><img src="/uploader-logo-b.png" class="logo"/></router-link>
+      <router-link to="/"><img src="/uploader-logo.svg" class="logo"/></router-link>
     </div>
     <Dropdown v-if="loggedIn">
       <template #trigger>
@@ -81,7 +81,7 @@
   }
 
   .logo {
-    width: 170px;
+    width: 210px;
   }
 }
 </style>

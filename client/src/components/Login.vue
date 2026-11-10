@@ -1,17 +1,29 @@
 <template>
   <div class="index-page content content--canvas">
-    <!-- <div class="hero-background" ref="canvasWrap">
-      <video
-        playsinline=""
-        autoplay="autoplay"
-        muted="muted"
-        loop="loop"
-        class="fullscreen"
-      >
-        <source src="/gradient.webm" type="video/webm" />
-      </video>
-    </div> -->
     <div class="main-hero-section">
+      <div class="hero-decor" aria-hidden="true">
+        <!-- <div class="file-badge file-badge--aiff">
+          <img class="file-badge__icon" src="/landing/file-icon-1.svg" alt="" />
+        </div>
+        <div class="file-badge file-badge--flac">
+          <img class="file-badge__icon" src="/landing/file-icon-2.svg" alt="" />
+        </div>
+        <div class="file-badge file-badge--wav">
+          <img class="file-badge__icon" src="/landing/file-icon-3.svg" alt="" />
+        </div>
+        <div class="file-badge file-badge--mp3">
+          <img class="file-badge__icon" src="/landing/file-icon-4.svg" alt="" />
+        </div> -->
+
+        <div class="hero-mock hero-mock--laptop">
+          <img src="/landing/laptop.png" alt="" />
+        </div>
+        <div class="hero-mock hero-mock--phone">
+          <img src="/landing/phone.png" alt="" />
+        </div>
+        <!-- <img class="hero-itunes" src="/landing/itunes.png" alt="" /> -->
+      </div>
+
       <div class="hero-content">
         <div class="hero-icons">
           <img src="/audio-b.svg" alt="" />
@@ -25,7 +37,7 @@
       </div>
       <LoginBtn></LoginBtn>
     </div>
-    <div class="mx-auto max-w-[1200px]">
+    <div class="mx-auto max-w-[1200px] mt-20">
       <div class="features grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
         <div v-for="(item, index) in features" :key="index">
           <div class="features__item text-center" :style="{'animation-delay': delay(index)}">
@@ -84,12 +96,12 @@
   display: flex;
   flex-direction: column;
   width: 100vw;
-  height: calc(100vh - 13rem);
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  min-height: 100vh;
   position: relative;
   justify-content: flex-start;
   align-items: center;
-  height: 100vh;
-  justify-content: center;
 }
 
 @keyframes fadeDown {
@@ -138,6 +150,15 @@
   }
 }
 
+@keyframes floatY {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
 @keyframes fadeDown3 {
   0% {
     opacity: 0;
@@ -156,18 +177,16 @@
 }
 
 .index-page {
-  background: transparent;
+  //background-image: linear-gradient(130deg, #cae8d3 10%, #ecdbdc 96%);
   position: relative;
   /* top: 0; */
   /* left: 0; */
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   color: #111;
   flex-direction: column;
-  margin-top: 10vh;
+  padding-top: 10vh;
 
   .hero-background {
     display: flex;
@@ -202,10 +221,125 @@
     z-index: 999;
     animation: fadeDown 2s ease-out;
     animation-fill-mode: forwards;
-    margin-bottom: 10vh;
-    padding: 0 10rem;
+    width: 100%;
+    padding: 6rem 2rem;
+    overflow: hidden;
+
+    .hero-decor {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      display: none;
+
+      @include for-desktop-up {
+        display: block;
+      }
+    }
+
+    .file-badge {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 45px;
+      animation: floatY 3.5s ease-in-out infinite;
+
+      &__icon {
+        display: block;
+        width: 100%;
+      }
+
+      &__tag {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -19px;
+        margin-left: -1px;
+        padding: 2px 4px;
+        border-radius: 1px;
+
+        img {
+          height: 10px;
+        }
+      }
+
+      &--aiff {
+        left: 14.98%;
+        top: 19.68%;
+        animation-duration: 6s;
+        animation-delay: 2s;
+      }
+      &--flac {
+        left: 78.75%;
+        top: 16.3%;
+        animation-duration: 6s;
+        animation-delay: 2s;
+      }
+      &--wav {
+        left: 25.99%;
+        top: 77.88%;
+        animation-duration: 5.2s;
+        animation-delay: 2.2s;
+      }
+      &--mp3 {
+        left: 72.96%;
+        top: 71%;
+        animation-duration: 5.2s;
+        animation-delay: 2.2s;
+      }
+    }
+
+    .hero-mock {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        display: block;
+        max-width: none;
+      }
+
+      &--laptop {
+        left: -8.55%;
+        top: 57.04%;
+        width: 28%;
+        height: 32.03%;
+        animation-duration: 1.4s;
+        animation-delay: 0.2s;
+
+        img {
+          width: 360px;
+          transform: rotate(-12.49deg);
+        }
+      }
+
+      &--phone {
+        left: 92.45%;
+        top: 35.13%;
+        width: 12.56%;
+        height: 30.35%;
+        animation-duration: 7.4s;
+        animation-delay: 0.2s;
+
+        img {
+          width: 130px;
+          transform: rotate(11.54deg);
+        }
+      }
+    }
+
+    .hero-itunes {
+      position: absolute;
+      left: 52.2%;
+      top: 85.5%;
+      width: 64px;
+      height: 64px;
+    }
 
     .hero-content {
+      position: relative;
+      z-index: 1;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -222,28 +356,41 @@
       }
 
       .hero-title {
-        margin-bottom: 3rem;
+        max-width: 760px;
+        margin-bottom: 2rem;
         text-align: center;
-        font-weight: 600;
-        color: #0d0d0d;
-
-        @include for-phone-only {
-          font-size: 5.5rem;
-          line-height: 5.5rem;
-        }
+        font-family: "Dela Gothic One", $font-family-title, sans-serif;
+        font-weight: 400;
+        text-transform: uppercase;
+        color: #1a1a1a;
+        font-size: 2.75rem;
+        line-height: 1.1;
 
         @include for-tablet-portrait-up {
-          font-size: 5rem;
-          line-height: 5.25rem;
+          font-size: 3.25rem;
         }
 
+        @include for-desktop-up {
+          font-size: 3.75rem;
+          line-height: 4rem;
+        }
       }
 
       .hero-subtitle {
-        margin-bottom: 3rem;
+        max-width: 600px;
         text-align: center;
-        margin-bottom: 3.5rem;
+        margin-bottom: 2.5rem;
+        font-family: $font-family, sans-serif;
+        font-weight: 400;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #1a1a1a;
       }
+    }
+
+    :deep(.login-button) {
+      position: relative;
+      z-index: 1;
     }
   }
   .features {
